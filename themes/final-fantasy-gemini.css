@@ -563,6 +563,28 @@ html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-dark-backdrop {
   background: rgba(4, 8, 30, 0.6) !important;
 }
 
+/* Anti-flash veil: a freshly-mounted overlay card paints Google-dark for a
+   frame or two before content.js dresses it. Undressed cards hold invisible;
+   the stamp reveals them the instant the window fill is on. The 90ms
+   animation is the dead-man's switch — pure CSS, so even with the script
+   gone a menu can never stay hidden. Deliberately NOT !important: important
+   opacity would also outrank the reveal animation itself. */
+@keyframes yume-menu-veil { to { opacity: 1; } }
+
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-card:not([data-yume-menu]),
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mat-mdc-dialog-surface:not([data-yume-menu]),
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mdc-dialog__surface:not([data-yume-menu]) {
+  opacity: 0;
+  animation: yume-menu-veil 0s linear 90ms forwards;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-card[data-yume-menu],
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mat-mdc-dialog-surface[data-yume-menu],
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mdc-dialog__surface[data-yume-menu] {
+  opacity: 1;
+  animation: none;
+}
+
 /* Chips (the notebook "N sources" pill and friends): little blue menu
    buttons, keyline and all. */
 html[data-cct-theme="final-fantasy-gemini"] mat-chip,
@@ -668,6 +690,18 @@ html[data-cct-theme="final-fantasy-gemini"] .thinking-banner {
   box-shadow: 0 2px 0 var(--ff-drop) !important;
   font-family: var(--ff-pixel-ui) !important;
   color: #fff !important;
+}
+
+/* The chat's bottom scroll-fade — the "second layer" text disappears
+   behind — is not an element at all: it is input-container::before, a
+   28px transparent-to-black gradient strip. No DOM sweep can touch a
+   pseudo-element, which is how it outlived every measured fix; a plain
+   stylesheet override wins here (verified live, applied and reverted).
+   Repainted as a night-sky fade in the sky gradient's own bottom colour,
+   so scrolling text melts into our dark instead of Google's black. */
+html[data-cct-theme="final-fantasy-gemini"] input-container::before,
+html[data-cct-theme="final-fantasy-gemini"] input-container::after {
+  background: linear-gradient(180deg, rgba(8, 10, 36, 0) 0%, rgba(8, 10, 36, 0.6) 60%, rgba(8, 10, 36, 0.85) 100%) !important;
 }
 
 /* The pre-text skeleton shimmer, re-tinted to the window palette. */
@@ -1170,6 +1204,20 @@ html[data-cct-theme="final-fantasy-gemini"] side-navigation-content expandable-s
   border-radius: 7px !important;
   margin: 2px 8px 10px !important;
   padding: 3px 4px !important;
+}
+
+/* Every sidebar row wears the pixel face — the rows re-declare Google Sans
+   on their own spans (gds-* classes), so the family is stated on the
+   descendants too. Icon ligatures opt out or they would spell their names. */
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content button,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a span:not(mat-icon):not([class*="lumi"]):not([class*="symbols"]),
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content button span:not(mat-icon):not([class*="lumi"]):not([class*="symbols"]):not(.mat-mdc-button-persistent-ripple),
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content [class*="gds-body"]:not(mat-icon),
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content [class*="gds-label"]:not(mat-icon),
+html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer,
+html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer span:not(mat-icon):not([class*="lumi"]) {
+  font-family: var(--ff-pixel-ui) !important;
 }
 
 /* Section labels (Notebooks / Recent) as small gold menu headers. */

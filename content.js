@@ -1214,6 +1214,8 @@
    * importance is the one paint-proof lever, so the stamp happens here.
    * Cleared when the theme goes off, like every other injected change.
    */
+  let geminiSweepAt = 0;   // throttle for the wide geometric sweep below
+
   function syncGeminiShell(on) {
     if (SITE !== "gemini") return;
     if (!on) {
@@ -1236,43 +1238,53 @@
     // found there — same philosophy as the claude banner hunter: geometry
     // over class-name guessing. Our own window (the fieldset) and body are
     // exempt; inline importance wins every cascade war.
-    // Solid painters go glass; gradient painters are the scroll-fade that
-    // hides content sliding under the composer, so they get a night-sky
-    // fade instead of deletion — scrolled text should still melt away at
-    // the bottom, just into OUR sky rather than Google's black. The fade's
-    // colour is the sky gradient's own bottom stop, so the hand-off is
-    // seamless. Probed at three x positions: offset painters (half-width
-    // fades beside the composer) would dodge a centre-only probe.
-    const FADE = "linear-gradient(180deg, rgba(8, 10, 36, 0) 0%, rgba(8, 10, 36, 0.55) 60%, rgba(8, 10, 36, 0.8) 100%)";
-    for (const x of [innerWidth * 0.3, innerWidth * 0.5, innerWidth * 0.72]) {
-      for (const y of [innerHeight - 6, innerHeight - 22, innerHeight - 44]) {
-        let el = document.elementFromPoint(x, y);
-        for (let i = 0; el && i < 7; i++, el = el.parentElement) {
-          if (el === document.body || el === document.documentElement) break;
-          if (el.closest("fieldset.input-area-container")) break;
-          if (el.dataset.yumeShellClear || el.className && /yume/.test(el.className)) continue;
-          const cs = getComputedStyle(el);
-          const solid = cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent";
-          const grad = cs.backgroundImage !== "none" && cs.backgroundImage.includes("gradient");
-          if (!solid && !grad) continue;
-          if (el.getBoundingClientRect().width < innerWidth * 0.4) continue;
-          el.style.setProperty("background", grad ? FADE : "transparent", "important");
-          el.dataset.yumeShellClear = "1";
-        }
+    // The scroll-fade: the overlay strip the chat disappears behind at the
+    // bottom. elementFromPoint can NEVER find it — overlay fades are
+    // pointer-events:none and hit-testing skips them — which is how it
+    // survived three rounds of point-probing. So it is found by geometry
+    // instead: any wide, short element sitting in the viewport's lower
+    // third whose computed paint is a gradient or an opaque dark gets
+    // repainted as a night-sky fade (gradients) or glass (solids). Rects
+    // are checked before computed styles so the wide sweep stays cheap,
+    // and the whole scan is throttled.
+    const now = performance.now();
+    if (now - geminiSweepAt > 500) {
+      geminiSweepAt = now;
+      const FADE = "linear-gradient(180deg, rgba(8, 10, 36, 0) 0%, rgba(8, 10, 36, 0.55) 60%, rgba(8, 10, 36, 0.8) 100%)";
+      for (const el of document.querySelectorAll("bard-sidenav-content div, bard-sidenav-content span, input-container, input-container div")) {
+        if (el.dataset.yumeShellClear) continue;
+        if (el.closest("fieldset.input-area-container") || (el.className && /yume/.test(el.className))) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width < innerWidth * 0.35 || r.height < 8 || r.height > 280) continue;
+        if (r.top < innerHeight * 0.55 || r.bottom > innerHeight + 4) continue;
+        const cs = getComputedStyle(el);
+        const grad = cs.backgroundImage !== "none" && cs.backgroundImage.includes("gradient");
+        const solid = cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent";
+        if (!grad && !solid) continue;
+        el.style.setProperty("background", grad ? FADE : "transparent", "important");
+        el.dataset.yumeShellClear = "1";
       }
     }
 
-    // The send slot: its wrapper elements (gem-icon-button / the container
-    // div), not just the inner button, carry stock fills — the box that kept
-    // haunting the select hand. Glass any stock-dark painter in the subtree.
-    for (const el of document.querySelectorAll(
-      '[data-test-id="send-button-container"], [data-test-id="send-button-container"] *,' +
-      ' gem-icon-button.send-button, gem-icon-button.send-button *')) {
-      if (el.dataset.yumeShellClear) continue;
-      const cs = getComputedStyle(el);
-      if (isStockDark(cs.backgroundColor) || (cs.backgroundImage !== "none" && cs.backgroundImage.includes("gradient"))) {
+    // The send/submit slot. Its aria-label is "Submit" on some builds and
+    // "Send message" on others, and the box behind the select hand came
+    // from the slot's wrapper AND fill layers — including fills fed by our
+    // own token overrides, which are not "stock dark" at all. So: find the
+    // button by label pattern, then strip EVERY fill from it, its inner
+    // layers, and three ancestors, unconditionally.
+    for (const b of document.querySelectorAll("input-container button, input-area-v2 button")) {
+      if (!/send|submit/i.test(b.getAttribute("aria-label") || "")) continue;
+      if (/stop/i.test(b.getAttribute("aria-label") || "")) continue;
+      let el = b;
+      for (let i = 0; el && i < 4; i++, el = el.parentElement) {
+        if (el.tagName === "INPUT-AREA-V2" || el.classList.contains("trailing-actions-wrapper")) break;
         el.style.setProperty("background", "transparent", "important");
-        el.dataset.yumeShellClear = "1";
+        el.style.setProperty("border", "0", "important");
+        el.style.setProperty("box-shadow", "none", "important");
+      }
+      for (const inner of b.querySelectorAll("*")) {
+        if (inner.tagName === "MAT-ICON") continue;
+        inner.style.setProperty("background", "transparent", "important");
       }
     }
 

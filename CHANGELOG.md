@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.3.5 — 2026-08-11
+
+The band and the finger, actually solved — both verified against the live
+page this time.
+
+- The bottom "second layer" chat text hides behind is input-container's
+  ::BEFORE — a pseudo-element, invisible to every DOM sweep ever written,
+  which is how it survived four rounds. A stylesheet !important repaint
+  (proven live, applied + reverted) turns it into a night-sky fade.
+- The box behind the select hand: the fill lives on the bare
+  gem-icon-button WRAPPER (and the button's aria-label is "Submit" on some
+  builds, "Send message" on others). content.js now finds the button by
+  label pattern and strips every fill from it, its inner layers, and its
+  ancestor chain, unconditionally.
+- Context menus stopped flashing black before turning blue: undressed
+  overlay cards hold invisible behind a 90ms pure-CSS veil the dresser
+  lifts the instant the window fill lands — with the animation as a
+  dead-man's switch so a menu can never stay hidden.
+- The whole sidebar wears the pixel face now (rows re-declare their own
+  fonts on inner spans; stated on the descendants, icons exempt).
+
 ## 1.3.4 — 2026-08-11
 
 - Dressed overlay cards are re-glassed on every mutation pass: menu groups
