@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.3.3 — 2026-08-11
+
+Third polish round: measured enforcement over selector guessing.
+
+- Overlay surfaces (the + menu's mat-cards AND dialog surfaces like the
+  notebook Sources window) are dressed INLINE by content.js the moment they
+  mount: window-gradient fill, and any child painting Google's near-black
+  surface family goes glass — colours with real hue survive. A/B builds
+  kept shuffling the class names; geometry and computed colour don't lie.
+- The label font rides the same stamp, so every menu/dialog row gets the
+  pixel face, not just the spans one build happened to name .menu-text.
+- The bottom strip where chat scrolls out of view is Gemini's scroll-fade:
+  instead of deleting it, the shell sweep repaints it as a night-sky fade,
+  so text melts into OUR dark rather than Google's black. The sweep works
+  by probing the strip and pinning whatever wide painter it finds.
+- User bubbles: the truncation scrim and the grey chip behind the
+  expand/collapse arrow are swept to glass — just the arrow now.
+- The composer's send-hand exclusions are structural (send-button-container
+  / gem-icon-button.send-button), not aria-label-dependent — the box behind
+  the finger while typing is gone for every label variant.
+- Chips (the notebook "N sources" pill) become little blue menu buttons;
+  the footer's settings gear becomes the menu crystal, as on the other
+  sites.
+
 ## 1.3.2 — 2026-08-11
 
 Second Gemini polish round, live-diagnosed.

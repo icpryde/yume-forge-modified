@@ -1216,14 +1216,60 @@
    */
   function syncGeminiShell(on) {
     if (SITE !== "gemini") return;
-    const ic = document.querySelector("input-container");
-    if (!ic) return;
-    if (on) {
-      if (ic.style.getPropertyValue("background") !== "transparent") {
-        ic.style.setProperty("background", "transparent", "important");
+    if (!on) {
+      for (const el of document.querySelectorAll("[data-yume-shell-clear]")) {
+        el.style.removeProperty("background");
+        delete el.dataset.yumeShellClear;
       }
-    } else if (ic.style.getPropertyValue("background")) {
-      ic.style.removeProperty("background");
+      return;
+    }
+    // input-container's own #0f0f0f, by name — the known offender.
+    const ic = document.querySelector("input-container");
+    if (ic && !ic.dataset.yumeShellClear) {
+      ic.style.setProperty("background", "transparent", "important");
+      ic.dataset.yumeShellClear = "1";
+    }
+    // And a measured sweep for whatever else paints the bottom strip: the
+    // app fades the chat into the composer with generated gradient divs
+    // whose classes shift per build, and on the transparent theme those
+    // fades render as a black band. Probe the strip, pin any WIDE painter
+    // found there — same philosophy as the claude banner hunter: geometry
+    // over class-name guessing. Our own window (the fieldset) and body are
+    // exempt; inline importance wins every cascade war.
+    // Solid painters go glass; gradient painters are the scroll-fade that
+    // hides content sliding under the composer, so they get a night-sky
+    // fade instead of deletion — scrolled text should still melt away at
+    // the bottom, just into OUR sky rather than Google's black.
+    const FADE = "linear-gradient(180deg, rgba(7, 10, 32, 0) 0%, rgba(7, 10, 32, 0.85) 55%, rgba(7, 10, 32, 0.97) 100%)";
+    for (const y of [innerHeight - 6, innerHeight - 22, innerHeight - 44]) {
+      let el = document.elementFromPoint(innerWidth / 2, y);
+      for (let i = 0; el && i < 7; i++, el = el.parentElement) {
+        if (el === document.body || el === document.documentElement) break;
+        if (el.closest("fieldset.input-area-container")) break;
+        if (el.dataset.yumeShellClear || el.className && /yume/.test(el.className)) continue;
+        const cs = getComputedStyle(el);
+        const solid = cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent";
+        const grad = cs.backgroundImage !== "none" && cs.backgroundImage.includes("gradient");
+        if (!solid && !grad) continue;
+        if (el.getBoundingClientRect().width < innerWidth * 0.5) continue;
+        el.style.setProperty("background", grad ? FADE : "transparent", "important");
+        el.dataset.yumeShellClear = "1";
+      }
+    }
+
+    // User bubbles: the truncation affordance draws a dark fade plus a grey
+    // chip behind its arrow — both alien inside a menu window. Sweep any
+    // painted descendant of the bubble to glass; the arrow glyph survives.
+    for (const b of document.querySelectorAll("user-query .user-query-bubble-with-background")) {
+      for (const el of b.querySelectorAll("*")) {
+        if (el.dataset.yumeShellClear) continue;
+        const cs = getComputedStyle(el);
+        if ((cs.backgroundImage !== "none" && cs.backgroundImage.includes("gradient")) ||
+            (cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent")) {
+          el.style.setProperty("background", "transparent", "important");
+          el.dataset.yumeShellClear = "1";
+        }
+      }
     }
   }
 
@@ -1319,8 +1365,59 @@
   }
 
   new MutationObserver((records) => {
-    for (const r of records) for (const n of r.addedNodes) renameInTooltip(n);
+    for (const r of records) for (const n of r.addedNodes) {
+      renameInTooltip(n);
+      dressGeminiMenus(n);
+    }
   }).observe(document.documentElement, { childList: true, subtree: true });
+
+  /* ------------------------------------------------------- gemini menus */
+
+  // Gemini's overlay menus (the composer's + menu and its flyouts) are
+  // mat-cards whose dark fill comes from a literal rule in a cross-origin
+  // sheet, and whose row/label class names drift between A/B builds — CSS
+  // kept winning one build and losing the next. So the moment a card mounts
+  // in the overlay, it gets the window fill INLINE (unbeatable) and any
+  // child that paints its own opaque fill goes glass. The label font rides
+  // a data-yume-menu stamp in the stylesheet, where coverage — not the
+  // cascade — was ever the problem.
+  // Google's neutral surface family (#0f0f0f…#333537) — the fills that read
+  // as "unthemed hole". Colours with real hue (selection blues, badge reds)
+  // are left alone.
+  function isStockDark(c) {
+    const m = /^rgba?\((\d+), (\d+), (\d+)/.exec(c || "");
+    return !!m && +m[1] < 64 && +m[2] < 64 && +m[3] < 64;
+  }
+
+  const OVERLAY_SURFACES = "mat-card, .mat-mdc-dialog-surface, .mdc-dialog__surface";
+
+  function dressGeminiMenus(node) {
+    if (SITE !== "gemini" || !isFinalFantasy() || !node || node.nodeType !== 1) return;
+    const surfaces = [];
+    if (node.matches?.(OVERLAY_SURFACES)) surfaces.push(node);
+    node.querySelectorAll?.(OVERLAY_SURFACES).forEach((c) => surfaces.push(c));
+    for (const card of surfaces) {
+      if (!card.closest(".cdk-overlay-container")) continue;
+      if (card.dataset.yumeMenu) continue;
+      card.dataset.yumeMenu = "1";
+      const dress = () => {
+        card.style.setProperty("background",
+          "linear-gradient(180deg, #2f47a8 0%, #16225e 58%, #0b1240 100%)", "important");
+        for (const el of card.querySelectorAll("*")) {
+          if (el.dataset.yumeMenuGlass) continue;
+          const cs = getComputedStyle(el);
+          if (isStockDark(cs.backgroundColor)) {
+            el.dataset.yumeMenuGlass = "1";
+            el.style.setProperty("background-color", "transparent", "important");
+          }
+        }
+      };
+      dress();
+      // Angular may still be attaching classes when the mount fires; one
+      // follow-up pass catches late-painted children.
+      requestAnimationFrame(dress);
+    }
+  }
 
   /* ------------------------------------------------------- shooting stars */
 

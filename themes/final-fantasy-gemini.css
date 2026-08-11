@@ -473,14 +473,30 @@ html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-li
 }
 
 /* The rows' text spans (.menu-text / .item) re-declare Google Sans on
-   themselves, so the pixel face is stated on the descendants too. */
+   themselves, and their class names drift per A/B build — so besides the
+   named spans, everything under a card content.js has stamped with
+   data-yume-menu gets the pixel face except the icon ligatures. */
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme .menu-text,
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme .item,
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme span:not(.mat-mdc-button-persistent-ripple),
-html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list button span:not(.mat-mdc-button-persistent-ripple) {
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list button span:not(.mat-mdc-button-persistent-ripple),
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] span:not(.mat-mdc-button-persistent-ripple):not([class*="lumi"]),
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] button:not([class*="lumi"]),
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] .mdc-list-item__primary-text {
   font-family: var(--ff-pixel-ui) !important;
   color: #fff !important;
   font-size: 12px !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] mat-icon {
+  font-family: "Luminous Symbols", "lumi-symbols", "Google Symbols", "Material Symbols Outlined" !important;
+  font-size: 20px !important;
+  color: #dbe4ff !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] button:hover span:not(.mat-mdc-button-persistent-ripple),
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] button:hover mat-icon {
+  color: var(--ff-gold) !important;
 }
 
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme:hover,
@@ -513,6 +529,29 @@ html[data-cct-theme="final-fantasy-gemini"] mat-tooltip-component .mdc-tooltip {
 /* The overlay scrim behind dialogs. */
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-dark-backdrop {
   background: rgba(4, 8, 30, 0.6) !important;
+}
+
+/* Chips (the notebook "N sources" pill and friends): little blue menu
+   buttons, keyline and all. */
+html[data-cct-theme="final-fantasy-gemini"] mat-chip,
+html[data-cct-theme="final-fantasy-gemini"] mat-chip .mdc-evolution-chip__action,
+html[data-cct-theme="final-fantasy-gemini"] [class*="source-chip"],
+html[data-cct-theme="final-fantasy-gemini"] button[class*="sources-button"],
+html[data-cct-theme="final-fantasy-gemini"] [class*="source-count"] {
+  background: linear-gradient(180deg, rgba(84, 114, 214, 0.55), rgba(18, 30, 92, 0.75)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 4px !important;
+  color: #fff !important;
+  font-family: var(--ff-pixel-ui) !important;
+  box-shadow: 0 2px 0 rgba(3, 6, 22, 0.5);
+}
+html[data-cct-theme="final-fantasy-gemini"] mat-chip *:not(mat-icon):not(img) {
+  background: transparent !important;
+  color: #fff !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] mat-chip:hover,
+html[data-cct-theme="final-fantasy-gemini"] [class*="source-chip"]:hover {
+  border-color: var(--ff-gold) !important;
 }
 
 /* ------------------------------------------------------- reply windows */
@@ -701,8 +740,8 @@ html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor {
    stock buttons come in three different sizes, which looked ragged next
    to the windowed pill). The send button opts out: it is the select hand,
    drawn frameless below. */
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button:not([aria-label="Send message"]),
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button:not([aria-label="Send message"]),
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button:not([aria-label="Send message"]):not([data-test-id="send-button-container"] *):not(gem-icon-button.send-button *),
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button:not([aria-label="Send message"]):not([data-test-id="send-button-container"] *):not(gem-icon-button.send-button *),
 html[data-cct-theme="final-fantasy-gemini"] button[data-test-id="bard-mode-menu-button"] {
   border: 1px solid rgba(255, 255, 255, 0.42) !important;
   border-radius: 3px !important;
@@ -1163,6 +1202,29 @@ html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer {
 }
 html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer .mavatar-footer-row {
   background: transparent !important;
+}
+
+/* The footer's settings gear becomes the menu crystal, as on the other two
+   sites' profile rows. Width derives from the asset's own aspect so a
+   re-rip never squashes it; the glyph hides by colour — the slot's size is
+   load-bearing. */
+html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer gem-icon-button mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="mavatar-footer-settings-button"] mat-icon {
+  position: relative;
+  color: transparent !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer gem-icon-button mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="mavatar-footer-settings-button"] mat-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  height: 22px;
+  width: calc(22px * var(--yume-ff-menu-crystal-w) / var(--yume-ff-menu-crystal-h));
+  background: var(--yume-ff-menu-crystal) center / contain no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(139, 234, 255, 0.45));
 }
 
 /* ---------------------------------------------------------------- header */
