@@ -1266,25 +1266,50 @@
       }
     }
 
-    // The send/submit slot. Its aria-label is "Submit" on some builds and
-    // "Send message" on others, and the box behind the select hand came
-    // from the slot's wrapper AND fill layers — including fills fed by our
-    // own token overrides, which are not "stock dark" at all. So: find the
-    // button by label pattern, then strip EVERY fill from it, its inner
-    // layers, and three ancestors, unconditionally.
-    for (const b of document.querySelectorAll("input-container button, input-area-v2 button")) {
-      if (!/send|submit/i.test(b.getAttribute("aria-label") || "")) continue;
-      if (/stop/i.test(b.getAttribute("aria-label") || "")) continue;
-      let el = b;
-      for (let i = 0; el && i < 4; i++, el = el.parentElement) {
-        if (el.tagName === "INPUT-AREA-V2" || el.classList.contains("trailing-actions-wrapper")) break;
+    // The send/submit slot. The box behind the select hand is painted by
+    // the bare gem-icon-button WRAPPER (a blue fill fed by our own token
+    // overrides — neither "stock dark" nor a gradient, which is how two
+    // colour-tested sweeps missed it), and the label is "Submit" on some
+    // builds, "Send message" on others, sometimes not on the button at
+    // all. So: no colour tests, no label tests — every fill in the known
+    // send containers is stripped unconditionally. The stop state opts
+    // back out: while a stop button occupies the slot, the strip is undone
+    // so the gold stop chip can show.
+    const sendRoots = document.querySelectorAll(
+      '[data-test-id="send-button-container"], gem-icon-button.send-button, .send-button-container');
+    for (const root of sendRoots) {
+      const els = [root, ...root.querySelectorAll("*")];
+      if (root.querySelector('button[aria-label*="stop" i]')) {
+        for (const el of els) {
+          if (el.dataset.yumeSendClear) {
+            el.style.removeProperty("background");
+            el.style.removeProperty("border");
+            el.style.removeProperty("box-shadow");
+            delete el.dataset.yumeSendClear;
+          }
+        }
+        continue;
+      }
+      for (const el of els) {
+        if (el.tagName === "MAT-ICON" || el.dataset.yumeSendClear) continue;
+        el.dataset.yumeSendClear = "1";
         el.style.setProperty("background", "transparent", "important");
         el.style.setProperty("border", "0", "important");
         el.style.setProperty("box-shadow", "none", "important");
       }
-      for (const inner of b.querySelectorAll("*")) {
-        if (inner.tagName === "MAT-ICON") continue;
-        inner.style.setProperty("background", "transparent", "important");
+    }
+    // Fallback for builds without the container hooks: label pattern.
+    for (const b of document.querySelectorAll("input-container button, input-area-v2 button")) {
+      const label = b.getAttribute("aria-label") || "";
+      if (!/send|submit/i.test(label) || /stop/i.test(label)) continue;
+      if (b.dataset.yumeSendClear) continue;
+      let el = b;
+      for (let i = 0; el && i < 4; i++, el = el.parentElement) {
+        if (el.tagName === "INPUT-AREA-V2" || el.classList.contains("trailing-actions-wrapper")) break;
+        el.dataset.yumeSendClear = "1";
+        el.style.setProperty("background", "transparent", "important");
+        el.style.setProperty("border", "0", "important");
+        el.style.setProperty("box-shadow", "none", "important");
       }
     }
 
@@ -1405,6 +1430,14 @@
     for (const r of records) for (const n of r.addedNodes) {
       renameInTooltip(n);
       dressGeminiMenus(n);
+      // Children of an already-dressed surface mount in waves (menu groups
+      // arrive after the card). Glassing them here — in the observer
+      // microtask, BEFORE the browser paints — is what keeps them from
+      // flashing their stock dark for a beat.
+      if (n.nodeType === 1) {
+        const card = n.closest?.("[data-yume-menu]");
+        if (card) glassStockDark(card);
+      }
     }
   }).observe(document.documentElement, { childList: true, subtree: true });
 
@@ -1454,10 +1487,18 @@
           "linear-gradient(180deg, #2f47a8 0%, #16225e 58%, #0b1240 100%)", "important");
         glassStockDark(card);
       };
+      // Held invisible until the first fully-dressed frame: dress now (pre
+      // paint), then once more a frame later for late classes, THEN reveal.
+      // The CSS veil covers the pre-stamp gap; this covers the settling one.
+      card.style.setProperty("opacity", "0", "important");
       dress();
-      // Angular may still be attaching classes when the mount fires; one
-      // follow-up pass catches late-painted children.
-      requestAnimationFrame(dress);
+      requestAnimationFrame(() => {
+        dress();
+        requestAnimationFrame(() => {
+          dress();
+          card.style.removeProperty("opacity");
+        });
+      });
     }
   }
 

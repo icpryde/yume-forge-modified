@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.6 — 2026-08-11
+
+- The send/submit slot is stripped of every fill UNCONDITIONALLY — no
+  colour tests (the box was a blue fill fed by our own tokens, which two
+  colour-tested sweeps politely skipped), no label tests (Submit vs Send
+  message vs neither, per build). The stop state opts back out so the gold
+  stop chip still shows.
+- Menu flash: the card was dressed instantly but its inner groups mount a
+  beat later and flashed their own dark fills. Children are now glassed in
+  the mutation microtask — before the browser paints — and the card holds
+  invisible until its first fully-dressed frame (double-rAF), with the CSS
+  veil as the pre-stamp cover.
+
 ## 1.3.5 — 2026-08-11
 
 The band and the finger, actually solved — both verified against the live
