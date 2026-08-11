@@ -558,6 +558,18 @@ html[data-cct-theme="final-fantasy-gemini"] button[aria-label*="submit" i]::befo
   border: 0 !important;
 }
 
+/* Forensically confirmed: at rest NOTHING paints behind the hand; the box
+   is the MDC state layer flooding in on hover/focus/press (the ripple
+   span's ::before, opacity 0 until touched). Killed by opacity as well as
+   colour, so whatever it fills with, it never shows. */
+html[data-cct-theme="final-fantasy-gemini"] [data-yume-send-clear] .mat-mdc-button-persistent-ripple::before,
+html[data-cct-theme="final-fantasy-gemini"] [data-yume-send-clear] .mat-ripple-element,
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label="Send message" i] .mat-mdc-button-persistent-ripple::before,
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label*="submit" i] .mat-mdc-button-persistent-ripple::before {
+  opacity: 0 !important;
+  background: transparent !important;
+}
+
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme:hover,
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list button:hover {
   background: rgba(255, 215, 94, 0.16) !important;

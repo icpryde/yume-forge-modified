@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.9 — 2026-08-11
+
+- Send-slot forensics on the live page (button subtree + five ancestors,
+  every element and pseudo): at rest the ONLY painting layer is the hand
+  sprite — the "box" is the MDC ripple state layer flooding in on
+  hover/focus/press. Killed by opacity as well as colour. (The live scan
+  also showed the browser was still running a pre-1.3.8 copy, so the
+  stamp-keyed purge had never actually loaded.)
+
 ## 1.3.8 — 2026-08-11
 
 - The submit box, from the user's own DevTools paste: every slot element
