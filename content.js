@@ -1239,22 +1239,47 @@
     // Solid painters go glass; gradient painters are the scroll-fade that
     // hides content sliding under the composer, so they get a night-sky
     // fade instead of deletion — scrolled text should still melt away at
-    // the bottom, just into OUR sky rather than Google's black.
-    const FADE = "linear-gradient(180deg, rgba(7, 10, 32, 0) 0%, rgba(7, 10, 32, 0.85) 55%, rgba(7, 10, 32, 0.97) 100%)";
-    for (const y of [innerHeight - 6, innerHeight - 22, innerHeight - 44]) {
-      let el = document.elementFromPoint(innerWidth / 2, y);
-      for (let i = 0; el && i < 7; i++, el = el.parentElement) {
-        if (el === document.body || el === document.documentElement) break;
-        if (el.closest("fieldset.input-area-container")) break;
-        if (el.dataset.yumeShellClear || el.className && /yume/.test(el.className)) continue;
-        const cs = getComputedStyle(el);
-        const solid = cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent";
-        const grad = cs.backgroundImage !== "none" && cs.backgroundImage.includes("gradient");
-        if (!solid && !grad) continue;
-        if (el.getBoundingClientRect().width < innerWidth * 0.5) continue;
-        el.style.setProperty("background", grad ? FADE : "transparent", "important");
+    // the bottom, just into OUR sky rather than Google's black. The fade's
+    // colour is the sky gradient's own bottom stop, so the hand-off is
+    // seamless. Probed at three x positions: offset painters (half-width
+    // fades beside the composer) would dodge a centre-only probe.
+    const FADE = "linear-gradient(180deg, rgba(8, 10, 36, 0) 0%, rgba(8, 10, 36, 0.55) 60%, rgba(8, 10, 36, 0.8) 100%)";
+    for (const x of [innerWidth * 0.3, innerWidth * 0.5, innerWidth * 0.72]) {
+      for (const y of [innerHeight - 6, innerHeight - 22, innerHeight - 44]) {
+        let el = document.elementFromPoint(x, y);
+        for (let i = 0; el && i < 7; i++, el = el.parentElement) {
+          if (el === document.body || el === document.documentElement) break;
+          if (el.closest("fieldset.input-area-container")) break;
+          if (el.dataset.yumeShellClear || el.className && /yume/.test(el.className)) continue;
+          const cs = getComputedStyle(el);
+          const solid = cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent";
+          const grad = cs.backgroundImage !== "none" && cs.backgroundImage.includes("gradient");
+          if (!solid && !grad) continue;
+          if (el.getBoundingClientRect().width < innerWidth * 0.4) continue;
+          el.style.setProperty("background", grad ? FADE : "transparent", "important");
+          el.dataset.yumeShellClear = "1";
+        }
+      }
+    }
+
+    // The send slot: its wrapper elements (gem-icon-button / the container
+    // div), not just the inner button, carry stock fills — the box that kept
+    // haunting the select hand. Glass any stock-dark painter in the subtree.
+    for (const el of document.querySelectorAll(
+      '[data-test-id="send-button-container"], [data-test-id="send-button-container"] *,' +
+      ' gem-icon-button.send-button, gem-icon-button.send-button *')) {
+      if (el.dataset.yumeShellClear) continue;
+      const cs = getComputedStyle(el);
+      if (isStockDark(cs.backgroundColor) || (cs.backgroundImage !== "none" && cs.backgroundImage.includes("gradient"))) {
+        el.style.setProperty("background", "transparent", "important");
         el.dataset.yumeShellClear = "1";
       }
+    }
+
+    // Stamped overlay cards: children keep mounting after the one-shot
+    // dress (lazy menu groups), so every pass re-glasses them.
+    for (const card of document.querySelectorAll("mat-card[data-yume-menu]")) {
+      glassStockDark(card);
     }
 
     // User bubbles: the truncation affordance draws a dark fade plus a grey
@@ -1391,6 +1416,18 @@
 
   const OVERLAY_SURFACES = "mat-card, .mat-mdc-dialog-surface, .mdc-dialog__surface";
 
+  /** Glass every stock-dark child of a dressed surface. Re-run freely. */
+  function glassStockDark(card) {
+    for (const el of card.querySelectorAll("*")) {
+      if (el.dataset.yumeMenuGlass) continue;
+      const cs = getComputedStyle(el);
+      if (isStockDark(cs.backgroundColor)) {
+        el.dataset.yumeMenuGlass = "1";
+        el.style.setProperty("background-color", "transparent", "important");
+      }
+    }
+  }
+
   function dressGeminiMenus(node) {
     if (SITE !== "gemini" || !isFinalFantasy() || !node || node.nodeType !== 1) return;
     const surfaces = [];
@@ -1403,14 +1440,7 @@
       const dress = () => {
         card.style.setProperty("background",
           "linear-gradient(180deg, #2f47a8 0%, #16225e 58%, #0b1240 100%)", "important");
-        for (const el of card.querySelectorAll("*")) {
-          if (el.dataset.yumeMenuGlass) continue;
-          const cs = getComputedStyle(el);
-          if (isStockDark(cs.backgroundColor)) {
-            el.dataset.yumeMenuGlass = "1";
-            el.style.setProperty("background-color", "transparent", "important");
-          }
-        }
+        glassStockDark(card);
       };
       dress();
       // Angular may still be attaching classes when the mount fires; one

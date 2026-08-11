@@ -499,6 +499,38 @@ html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] button:hove
   color: var(--ff-gold) !important;
 }
 
+/* Hover/selected rows inside dressed surfaces: Material paints these with
+   dynamic grey state layers (hover pseudo-classes, --selected modifiers,
+   ripple ::before), which inline pins can't reach — they flip at runtime.
+   All of them go gold wash instead of grey. */
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] button:hover,
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] a:hover,
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] [class*="--selected"],
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] [class*="highlighted"],
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] [aria-checked="true"],
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] [aria-expanded="true"] {
+  background: rgba(255, 215, 94, 0.16) !important;
+  background-color: rgba(255, 215, 94, 0.16) !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] button::before,
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] .mdc-list-item__ripple::before,
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] .mat-mdc-button-persistent-ripple::before,
+html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] .mat-ripple-element {
+  background: rgba(255, 215, 94, 0.25) !important;
+  background-color: rgba(255, 215, 94, 0.25) !important;
+}
+
+/* The send slot's wrappers carry stock fills of their own (the box behind
+   the select hand); stylesheet backup for the JS sweep. */
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"],
+html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button,
+html[data-cct-theme="final-fantasy-gemini"] .send-button-container {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme:hover,
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list button:hover {
   background: rgba(255, 215, 94, 0.16) !important;

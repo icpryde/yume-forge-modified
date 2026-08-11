@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.4 — 2026-08-11
+
+- Dressed overlay cards are re-glassed on every mutation pass: menu groups
+  that mount AFTER the card (the "mostly black" block) get caught now.
+- Hover/selected rows inside menus go gold wash via CSS (they are dynamic
+  Material state layers no inline pin can reach).
+- The box behind the select hand was the send slot's WRAPPER elements
+  painting, not the button — the shell sweep now glasses the whole subtree,
+  with a stylesheet backup.
+- The bottom scroll-fade colour now matches the sky gradient's own bottom
+  stop with a gentler ramp, and the sweep probes three x positions so
+  offset painters can't dodge it.
+
 ## 1.3.3 — 2026-08-11
 
 Third polish round: measured enforcement over selector guessing.
