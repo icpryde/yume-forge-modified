@@ -541,15 +541,16 @@ html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .persistent-mic gem-ic
   box-shadow: none !important;
 }
 
-html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] span::before,
-html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] span::after,
-html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] button::before,
-html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button span::before,
-html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button span::after,
-html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button::before,
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper gem-icon-button span::before,
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper gem-icon-button span::after,
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper gem-icon-button::before {
+/* Pseudo purge, keyed on the JS stamp itself rather than container names —
+   the slot's hierarchy drifts per build (gem-icon inside the button, no
+   wrapper at all on some), but the stamp follows the sweep wherever it
+   goes. The send button's own ::after is the hand and stays; its ::before
+   and every stamped descendant's pseudos go. */
+html[data-cct-theme="final-fantasy-gemini"] [data-yume-send-clear]:not(button)::before,
+html[data-cct-theme="final-fantasy-gemini"] [data-yume-send-clear]:not(button)::after,
+html[data-cct-theme="final-fantasy-gemini"] button[data-yume-send-clear]::before,
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label="Send message" i]::before,
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label*="submit" i]::before {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;

@@ -1298,18 +1298,22 @@
         el.style.setProperty("box-shadow", "none", "important");
       }
     }
-    // Fallback for builds without the container hooks: label pattern.
+    // Label-pattern walk. Runs even when the container sweep already
+    // stamped the button: the sweep covers the root DOWNWARD, and skipping
+    // here left the root's own ANCESTORS painted on one build — the walk
+    // is what pins upward.
     for (const b of document.querySelectorAll("input-container button, input-area-v2 button")) {
       const label = b.getAttribute("aria-label") || "";
       if (!/send|submit/i.test(label) || /stop/i.test(label)) continue;
-      if (b.dataset.yumeSendClear) continue;
       let el = b;
-      for (let i = 0; el && i < 4; i++, el = el.parentElement) {
+      for (let i = 0; el && i < 5; i++, el = el.parentElement) {
         if (el.tagName === "INPUT-AREA-V2" || el.classList.contains("trailing-actions-wrapper")) break;
-        el.dataset.yumeSendClear = "1";
-        el.style.setProperty("background", "transparent", "important");
-        el.style.setProperty("border", "0", "important");
-        el.style.setProperty("box-shadow", "none", "important");
+        if (!el.dataset.yumeSendClear) {
+          el.dataset.yumeSendClear = "1";
+          el.style.setProperty("background", "transparent", "important");
+          el.style.setProperty("border", "0", "important");
+          el.style.setProperty("box-shadow", "none", "important");
+        }
       }
     }
 

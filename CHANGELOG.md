@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.8 — 2026-08-11
+
+- The submit box, from the user's own DevTools paste: every slot element
+  was already stamped transparent, proving the paint is a PSEUDO layer on
+  the stamped elements (this build nests gem-icon inside the button — no
+  wrapper for container-scoped pseudo rules to key on). The pseudo purge
+  now keys on the data-yume-send-clear stamp itself, following the sweep
+  through any hierarchy; and the label walk pins the swept root's own
+  ancestors instead of skipping stamped buttons.
+
 ## 1.3.7 — 2026-08-11
 
 - The submit button's box, final form: covered the bare gem-icon-button
