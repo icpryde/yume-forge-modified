@@ -125,9 +125,14 @@
   }
 
   /* composer — the live element paints an opaque #0f0f0f of its own (the
-     "black band"); reproduced here so the theme's transparency override is
-     actually exercised. */
-  input-container { display: block; padding: 8px 16px 6px; background: #0f0f0f; }
+     "black band"), and at least one build does it with enough force that
+     stylesheet overrides lost. !important here simulates that worst case:
+     only content.js's inline enforcement can clear this one. */
+  input-container { display: block; padding: 8px 16px 6px; background: #0f0f0f !important; }
+  /* stock buttons come in three sizes — the theme must flatten them to one */
+  .mic-button-container button { width: 40px; height: 40px; }
+  button[data-test-id="bard-mode-menu-button"] { height: 26px; }
+  .leading-actions-wrapper button { width: 28px; height: 28px; }
   fieldset.input-area-container { border: 0; padding: 0; max-width: 760px; margin: 0 auto; }
   input-area-v2 { display: block; }
   .input-area { background: #1e1f20; border-radius: 26px; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -270,19 +275,20 @@
 <div class="cdk-overlay-container" id="overlay" hidden><div class="cdk-overlay-pane" style="position:fixed;left:340px;bottom:120px">
   <mat-card class="card-container lm-menu-theme" style="display:block;background:#1f1f1f;border-radius:20px;padding:8px;width:230px">
     <mat-action-list class="menu-list-container" style="display:block">
-      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">up</mat-icon> Upload files</button>
-      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">dr</mat-icon> Add from Drive</button>
-      <button class="more-upload-button lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">mo</mat-icon> More uploads</button>
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">up</mat-icon> <span class="menu-text gem-menu-item-label">Upload files</span></button>
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">dr</mat-icon> <span class="menu-text gem-menu-item-label">Add from Drive</span></button>
+      <button class="more-upload-button lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">mo</mat-icon> <span class="menu-text gem-menu-item-label">More uploads</span></button>
     </mat-action-list>
     <mat-divider class="divider mat-divider-horizontal" style="display:block;border-top:1px solid #444"></mat-divider>
     <mat-action-list class="menu-list-container" style="display:block">
-      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">im</mat-icon> Create image</button>
-      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">cv</mat-icon> Canvas</button>
-      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">dp</mat-icon> Deep Research</button>
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">im</mat-icon> <span class="menu-text gem-menu-item-label">Create image</span></button>
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">cv</mat-icon> <span class="menu-text gem-menu-item-label">Canvas</span></button>
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">dp</mat-icon> <span class="menu-text gem-menu-item-label">Deep Research</span></button>
     </mat-action-list>
   </mat-card>
 </div></div>
 <style>
+  .lm-menu-item-theme .menu-text { font-family: "Google Sans", Roboto, sans-serif; }
   .lm-menu-item-theme { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: 0; color: #e3e3e3; padding: 9px 12px; font-size: 13.5px; text-align: left; }
 </style>
 

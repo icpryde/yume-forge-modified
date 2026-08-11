@@ -1206,6 +1206,27 @@
       .forEach((el) => el.removeAttribute(LATEST_ATTR));
   }
 
+  /**
+   * gemini only: input-container ships an opaque #0f0f0f of its own that
+   * reads as a black band across the viewport bottom. Its utility classes
+   * shift between builds (input-gradient / ui-improvements-phase-1 / …), and
+   * at least one build beat every stylesheet-level override live — inline
+   * importance is the one paint-proof lever, so the stamp happens here.
+   * Cleared when the theme goes off, like every other injected change.
+   */
+  function syncGeminiShell(on) {
+    if (SITE !== "gemini") return;
+    const ic = document.querySelector("input-container");
+    if (!ic) return;
+    if (on) {
+      if (ic.style.getPropertyValue("background") !== "transparent") {
+        ic.style.setProperty("background", "transparent", "important");
+      }
+    } else if (ic.style.getPropertyValue("background")) {
+      ic.style.removeProperty("background");
+    }
+  }
+
   function syncParty() {
     if (!alive()) {
       // Orphaned — tear our own additions out rather than leaving them stranded.
@@ -1219,6 +1240,7 @@
     }
     const on = isFinalFantasy();
     const host = on ? composer() : null;
+    syncGeminiShell(on);
 
     // The attribute tracks "this script is managing the party", not "the party
     // is mounted right now". Clearing it while the composer is briefly

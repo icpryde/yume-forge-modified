@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Yume Forge Modified — Claude, ChatGPT & Gemini Themes",
-  "version": "1.3.1",
-  "description": "Themes for claude.ai, chatgpt.com and gemini.google.com — pick one, or import and share your own.",
+  "name": "Yume Forge Modified \u2014 Claude, ChatGPT & Gemini Themes",
+  "version": "1.3.2",
+  "description": "Themes for claude.ai, chatgpt.com and gemini.google.com \u2014 pick one, or import and share your own.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

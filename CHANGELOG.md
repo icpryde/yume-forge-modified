@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.3.2 — 2026-08-11
+
+Second Gemini polish round, live-diagnosed.
+
+- The + menu's dark fill survived 1.3.1: it is a literal high-specificity
+  declaration in a cross-origin sheet, no token behind it. The window fill
+  now states every background longhand in full !important dress, and the
+  item labels get the pixel face on the spans that re-declare their own
+  font (.menu-text / .item).
+- The bottom band (input-container's opaque #0f0f0f) is now pinned
+  transparent by content.js with an inline !important — the one lever no
+  stylesheet can outrank — cleared again when the theme switches off.
+- The active sidebar row trades gold for a crystal-blue wash with a soft
+  pulsing glow, per taste.
+- Composer buttons (plus, mode pill, mic, stop) flatten to one 32px chip
+  height — they shipped in three sizes — and the send hand opts out of the
+  chip frame entirely, so the finger no longer wears a box.
+
 ## 1.3.1 — 2026-08-11
 
 Gemini polish, from first-morning feedback on the live site.

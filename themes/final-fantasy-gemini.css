@@ -446,8 +446,15 @@ html[data-cct-theme="final-fantasy-gemini"] gem-menu-item.selected * {
    get their window dressing here. Scoped to the menu-flavoured cards so a
    future genuine content card isn't framed by accident. */
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-card.lm-menu-theme,
-html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-card[class*="card-container"] {
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-card[class*="card-container"],
+html[data-cct-theme="final-fantasy-gemini"] body mat-card.lm-menu-theme.card-container,
+html[data-cct-theme="final-fantasy-gemini"] mat-card.lm-menu-theme {
+  /* The stock #1f1f1f fill is a literal, high-specificity declaration in a
+     cross-origin sheet (no token drives it), so every longhand is stated
+     here in full battle dress — the shorthand alone lost to it live. */
   background: var(--ff-window) !important;
+  background-color: var(--ff-win-mid) !important;
+  background-image: linear-gradient(180deg, var(--ff-win-top) 0%, var(--ff-win-mid) 58%, var(--ff-win-bot) 100%) !important;
   border: 2px solid var(--ff-frame) !important;
   border-radius: 7px !important;
   box-shadow: var(--ff-frame-shadow) !important;
@@ -463,6 +470,17 @@ html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-li
   color: #fff !important;
   font-family: var(--ff-pixel-ui) !important;
   border-radius: 4px !important;
+}
+
+/* The rows' text spans (.menu-text / .item) re-declare Google Sans on
+   themselves, so the pixel face is stated on the descendants too. */
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme .menu-text,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme .item,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme span:not(.mat-mdc-button-persistent-ripple),
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list button span:not(.mat-mdc-button-persistent-ripple) {
+  font-family: var(--ff-pixel-ui) !important;
+  color: #fff !important;
+  font-size: 12px !important;
 }
 
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme:hover,
@@ -678,9 +696,13 @@ html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor {
   background: transparent !important;
 }
 
-/* Composer control chips: plus/toolbox, mode pill, mic. Cosmetic only. */
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button,
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button,
+/* Composer control chips: plus/toolbox, mode pill, mic, stop. Cosmetic
+   only — but sized to ONE height so the row reads as a matched set (the
+   stock buttons come in three different sizes, which looked ragged next
+   to the windowed pill). The send button opts out: it is the select hand,
+   drawn frameless below. */
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button:not([aria-label="Send message"]),
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button:not([aria-label="Send message"]),
 html[data-cct-theme="final-fantasy-gemini"] button[data-test-id="bard-mode-menu-button"] {
   border: 1px solid rgba(255, 255, 255, 0.42) !important;
   border-radius: 3px !important;
@@ -688,10 +710,15 @@ html[data-cct-theme="final-fantasy-gemini"] button[data-test-id="bard-mode-menu-
   color: #fff !important;
   font-family: var(--ff-pixel-ui) !important;
   box-shadow: 0 2px 0 rgba(3, 6, 22, 0.5);
+  height: 32px !important;
+  min-width: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button:hover,
-html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button:hover,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button:not([aria-label="Send message"]):hover,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button:not([aria-label="Send message"]):hover,
 html[data-cct-theme="final-fantasy-gemini"] button[data-test-id="bard-mode-menu-button"]:hover {
   border-color: var(--ff-gold) !important;
   color: var(--ff-gold) !important;
@@ -704,14 +731,22 @@ html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapp
 /* ---------------------------------------------------------- send button */
 
 /* The select hand, mirrored to point left into the text. The send button
-   only mounts once the composer has content; the mic keeps its own look. */
+   only mounts once the composer has content; the mic keeps its own look.
+   The trailing-wrapper variants are listed so this always outweighs the
+   chip rule above — the chip's frame on this button was the mystery box
+   behind the finger. */
 html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] button,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button[aria-label="Send message"],
+html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button button,
 html[data-cct-theme="final-fantasy-gemini"] button[aria-label="Send message"] {
   background: transparent !important;
+  background-image: none !important;
   border: 0 !important;
   box-shadow: none !important;
   position: relative;
   overflow: visible !important;
+  height: 32px !important;
+  min-width: 36px !important;
 }
 
 html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] button > *,
@@ -937,18 +972,34 @@ html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:hover * {
 
 /* The ACTIVE row (current page / open conversation): Gemini paints it as a
    flat #171717 pill, which read as an unthemed hole. Here it is the cursor
-   row of a JRPG menu — gold wash, thin white ring, gold text. */
+   row of a JRPG menu — crystal-blue wash, thin white ring, and the same
+   soft glow the breathing windows wear, gently pulsing. */
+@keyframes ff-row-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(196, 220, 255, 0.85),
+      0 0 8px 1px rgba(134, 202, 255, 0.4),
+      0 1px 0 rgba(3, 6, 22, 0.5);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(226, 240, 255, 0.95),
+      0 0 14px 3px rgba(139, 234, 255, 0.6),
+      0 1px 0 rgba(3, 6, 22, 0.5);
+  }
+}
+
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item.is-active,
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item[aria-current="page"] {
-  background: linear-gradient(180deg, rgba(255, 215, 94, 0.24), rgba(255, 215, 94, 0.1)) !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75), 0 1px 0 rgba(3, 6, 22, 0.5) !important;
+  background: linear-gradient(180deg, rgba(139, 234, 255, 0.3), rgba(92, 152, 255, 0.14)) !important;
   border-radius: 5px !important;
+  animation: ff-row-glow 3.2s ease-in-out infinite;
 }
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item.is-active,
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item.is-active *,
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item[aria-current="page"],
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item[aria-current="page"] * {
-  color: var(--ff-gold) !important;
+  color: #ffffff !important;
 }
 
 /* The trailing "More options" affordance on chat rows keeps just its arrow:
@@ -1337,7 +1388,9 @@ html[data-cct-theme="final-fantasy-gemini"] .yume-choco-c {
   html[data-cct-theme="final-fantasy-gemini"] .yume-party-member,
   html[data-cct-theme="final-fantasy-gemini"] .yume-shooting-star,
   html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-working] .response-container::after,
-  html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:not([href^="http"]):hover::before {
+  html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:not([href^="http"]):hover::before,
+  html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item.is-active,
+  html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item[aria-current="page"] {
     animation: none !important;
   }
   html[data-cct-theme="final-fantasy-gemini"] .yume-choco,
