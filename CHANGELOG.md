@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.3.1 — 2026-08-11
+
+Gemini polish, from first-morning feedback on the live site.
+
+- The composer's **+ menu** and its More-uploads/More-tools flyouts (Material
+  `mat-card.lm-menu-theme` overlays, not mat-menu panels) are now proper menu
+  windows with gold hover rows.
+- The **active sidebar row** (current page / open chat) trades Gemini's flat
+  dark pill for a gold cursor-row wash with a thin white ring; the trailing
+  "More options" arrow keeps just its arrow (its Material state layer goes
+  gold on hover instead of the grey disc).
+- **Sidebar section windows**: New chat + Search chats, Images…Gems, and the
+  Notebooks section each sit in their own white-framed box (Recent stays
+  open). Section headers ride gold inside them.
+- The **black band** across the viewport bottom after a reply was
+  `input-container`'s own opaque #0f0f0f — now reliably glass (heavier
+  selectors plus the longhand).
+- The **gold block** beside the caret was the editor's own scrollbar wearing
+  the theme's gold thumb; scrollbars inside the composer pill are hidden,
+  as stock Gemini does.
+
 ## 1.3.0 — 2026-08-11
 
 Final Fantasy comes to gemini.google.com.

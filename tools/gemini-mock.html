@@ -66,6 +66,13 @@
   infinite-scroller { display: block; max-width: 760px; margin: 0 auto; padding: 24px 16px 32px; }
 
   /* sidebar rows */
+  mat-nav-list, expandable-section, infinite-scroller { display: block; }
+  .expandable-section-header { background: none; border: 0; color: #9a9b9c; font-size: 12px; padding: 12px 12px 6px; display: block; }
+  gem-nav-list-item a gem-icon-button { margin-left: auto; }
+  gem-nav-list-item a gem-icon-button button { position: relative; background: none; border: 0; color: inherit; width: 24px; height: 24px; border-radius: 9999px; }
+  .mat-mdc-button-persistent-ripple { position: absolute; inset: 0; border-radius: inherit; }
+  .mat-mdc-button-persistent-ripple::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: rgb(196,199,197); opacity: 0; }
+  gem-icon-button button:hover .mat-mdc-button-persistent-ripple::before { opacity: 0.12; }
   .sparkle-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
   .segmented { display: flex; background: #131314; border-radius: 18px; padding: 3px; margin: 0 4px 12px; }
   .segmented button { flex: 1; border: 0; border-radius: 15px; padding: 7px 0; background: transparent; color: inherit; font-size: 13px; }
@@ -117,8 +124,10 @@
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
 
-  /* composer */
-  input-container { display: block; padding: 8px 16px 6px; }
+  /* composer — the live element paints an opaque #0f0f0f of its own (the
+     "black band"); reproduced here so the theme's transparency override is
+     actually exercised. */
+  input-container { display: block; padding: 8px 16px 6px; background: #0f0f0f; }
   fieldset.input-area-container { border: 0; padding: 0; max-width: 760px; margin: 0 auto; }
   input-area-v2 { display: block; }
   .input-area { background: #1e1f20; border-radius: 26px; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -159,22 +168,34 @@
       <button class="app-tab">Spark</button>
     </div></mode-switcher-toggle>
     <div class="overflow-container has-mode-switcher-toggle">
-      <gem-nav-list-item><a href="/app"><mat-icon class="lumi-symbols">edit_square</mat-icon><span>New chat</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="/search"><mat-icon class="lumi-symbols">search</mat-icon><span>Search chats</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="/images"><mat-icon class="lumi-symbols">image</mat-icon><span>Images</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="/videos"><mat-icon class="lumi-symbols">movie</mat-icon><span>Videos</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="library"><mat-icon class="lumi-symbols">book</mat-icon><span>Library</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="/gems/view"><mat-icon class="lumi-symbols">diamond</mat-icon><span>Gems</span></a></gem-nav-list-item>
+      <div class="top-action-list"><mat-nav-list class="gds-sidenav-list">
+        <gem-nav-list-item><a class="gem-nav-list-item" href="/app"><mat-icon class="lumi-symbols">edit_square</mat-icon><span>New chat</span></a></gem-nav-list-item>
+        <gem-nav-list-item><a class="gem-nav-list-item" href="/search"><mat-icon class="lumi-symbols">search</mat-icon><span>Search chats</span></a></gem-nav-list-item>
+      </mat-nav-list></div>
+      <infinite-scroller class="lr26-theme">
+        <mat-nav-list class="gds-sidenav-list top-action-list-scrollable">
+          <gem-nav-list-item><a class="gem-nav-list-item" href="/images"><mat-icon class="lumi-symbols">image</mat-icon><span>Images</span></a></gem-nav-list-item>
+          <gem-nav-list-item><a class="gem-nav-list-item" href="/videos"><mat-icon class="lumi-symbols">movie</mat-icon><span>Videos</span></a></gem-nav-list-item>
+          <gem-nav-list-item><a class="gem-nav-list-item" href="library"><mat-icon class="lumi-symbols">book</mat-icon><span>Library</span></a></gem-nav-list-item>
+          <gem-nav-list-item><a class="gem-nav-list-item" href="/gems/view"><mat-icon class="lumi-symbols">diamond</mat-icon><span>Gems</span></a></gem-nav-list-item>
+        </mat-nav-list>
 
-      <div class="section-title">Notebooks</div>
-      <gem-nav-list-item><a href="/notebooks/create"><mat-icon class="lumi-symbols">add</mat-icon><span>New notebook</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="/notebook/a8a507a3-1121-46c0-a142-f52083d6b249"><mat-icon class="lumi-symbols">note</mat-icon><span>Field Notes</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="/notebooks/view"><mat-icon class="lumi-symbols">more_horiz</mat-icon><span>All notebooks</span></a></gem-nav-list-item>
-
-      <div class="section-title">Recent</div>
-      <gem-nav-list-item><a href="/app/9637330fe0cfa7d7"><span>Airship maintenance schedule</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="/app/980d5140f18db257"><span>Best gil farming routes</span></a></gem-nav-list-item>
-      <gem-nav-list-item><a href="/app/e726ebbbca432688"><span>Chocobos: Final Fantasy Mounts</span></a></gem-nav-list-item>
+        <expandable-section class="expanded">
+          <button class="expandable-section-header" aria-label="Toggle Notebooks"><span class="expandable-section-title gds-body-s">Notebooks</span></button>
+          <gem-nav-list-item><a class="gem-nav-list-item" href="/notebooks/create"><mat-icon class="lumi-symbols">add</mat-icon><span>New notebook</span></a></gem-nav-list-item>
+          <gem-nav-list-item><a class="gem-nav-list-item" href="/notebook/a8a507a3-1121-46c0-a142-f52083d6b249"><mat-icon class="lumi-symbols">note</mat-icon><span>Field Notes</span></a></gem-nav-list-item>
+          <gem-nav-list-item><a class="gem-nav-list-item" href="/notebooks/view"><mat-icon class="lumi-symbols">more_horiz</mat-icon><span>All notebooks</span></a></gem-nav-list-item>
+        </expandable-section>
+        <div class="section-divider"></div>
+        <expandable-section class="expanded">
+          <button class="expandable-section-header" aria-label="Toggle Recent"><span class="expandable-section-title gds-body-s">Recent</span></button>
+          <gem-nav-list-item><a class="gem-nav-list-item" href="/app/9637330fe0cfa7d7"><span>Airship maintenance schedule</span></a></gem-nav-list-item>
+          <gem-nav-list-item><a class="gem-nav-list-item" href="/app/980d5140f18db257"><span>Best gil farming routes</span></a></gem-nav-list-item>
+          <gem-nav-list-item><a class="gem-nav-list-item is-active" aria-current="page" href="/app/e726ebbbca432688"><span>Chocobos: Final Fantasy Mounts</span>
+            <gem-icon-button class="gem-button gem-button-size-xsmall"><button aria-label="More options"><span class="mat-mdc-button-persistent-ripple"></span><mat-icon class="lumi-symbols">arrow</mat-icon></button></gem-icon-button>
+          </a></gem-nav-list-item>
+        </expandable-section>
+      </infinite-scroller>
     </div>
     <sidenav-mavatar-footer>
       <div class="mavatar-footer-row">
@@ -245,6 +266,26 @@
 </bard-sidenav-container></side-navigation-v2>
 </main></chat-app></chat-app-orchestrator>
 
+<!-- Overlay replica: the + menu's mat-card (shown via ?state=menu). -->
+<div class="cdk-overlay-container" id="overlay" hidden><div class="cdk-overlay-pane" style="position:fixed;left:340px;bottom:120px">
+  <mat-card class="card-container lm-menu-theme" style="display:block;background:#1f1f1f;border-radius:20px;padding:8px;width:230px">
+    <mat-action-list class="menu-list-container" style="display:block">
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">up</mat-icon> Upload files</button>
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">dr</mat-icon> Add from Drive</button>
+      <button class="more-upload-button lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">mo</mat-icon> More uploads</button>
+    </mat-action-list>
+    <mat-divider class="divider mat-divider-horizontal" style="display:block;border-top:1px solid #444"></mat-divider>
+    <mat-action-list class="menu-list-container" style="display:block">
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">im</mat-icon> Create image</button>
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">cv</mat-icon> Canvas</button>
+      <button class="lm-menu-item-theme" role="menuitem"><mat-icon class="lumi-symbols">dp</mat-icon> Deep Research</button>
+    </mat-action-list>
+  </mat-card>
+</div></div>
+<style>
+  .lm-menu-item-theme { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: 0; color: #e3e3e3; padding: 9px 12px; font-size: 13.5px; text-align: left; }
+</style>
+
 <script src="../lib/theme-engine.js"></script>
 <script src="../content.js"></script>
 <script>
@@ -258,6 +299,9 @@
     // Removed, not hidden: the real app unmounts the zero state, and the
     // party's kneel rule keys on :has(modular-zero-state).
     document.getElementById("zero").remove();
+  }
+  if (state === "menu") {
+    document.getElementById("overlay").hidden = false;
   }
   if (state === "busy") {
     // Mid-run shape per the live probe: actions row not mounted yet, stop

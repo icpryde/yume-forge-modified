@@ -164,7 +164,11 @@ html[data-cct-theme="final-fantasy-gemini"] body {
   background-color: #0b1240 !important;
 }
 
-/* The app's own full-height wrappers go glass so the sky shows through. */
+/* The app's own full-height wrappers go glass so the sky shows through.
+   input-container gets extra selector weight and the longhand too: it ships
+   an opaque #0f0f0f of its own that showed as a black band across the
+   viewport bottom the moment a reply pushed the layout — the band is this
+   element, not the collapsed toolbox drawer. */
 html[data-cct-theme="final-fantasy-gemini"] chat-app,
 html[data-cct-theme="final-fantasy-gemini"] main.chat-app,
 html[data-cct-theme="final-fantasy-gemini"] bard-sidenav-container,
@@ -172,8 +176,13 @@ html[data-cct-theme="final-fantasy-gemini"] bard-sidenav-content,
 html[data-cct-theme="final-fantasy-gemini"] chat-window,
 html[data-cct-theme="final-fantasy-gemini"] chat-window-content,
 html[data-cct-theme="final-fantasy-gemini"] #chat-history,
-html[data-cct-theme="final-fantasy-gemini"] input-container {
+html[data-cct-theme="final-fantasy-gemini"] .chat-container,
+html[data-cct-theme="final-fantasy-gemini"] input-container,
+html[data-cct-theme="final-fantasy-gemini"] body input-container,
+html[data-cct-theme="final-fantasy-gemini"] chat-window input-container,
+html[data-cct-theme="final-fantasy-gemini"] input-container.hide-on-print {
   background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Moon + corner washes, floating above the page (same layer budget as the
@@ -429,6 +438,44 @@ html[data-cct-theme="final-fantasy-gemini"] gem-menu-item.active * {
 html[data-cct-theme="final-fantasy-gemini"] gem-menu-item.selected,
 html[data-cct-theme="final-fantasy-gemini"] gem-menu-item.selected * {
   color: var(--ff-gold) !important;
+}
+
+/* The composer's + menu ("Upload and tools"), its More-uploads/More-tools
+   flyouts, and any other lm-menu Material card in the overlay: these are
+   mat-cards (bg #1f1f1f, radius 20px stock), not mat-menu panels, so they
+   get their window dressing here. Scoped to the menu-flavoured cards so a
+   future genuine content card isn't framed by accident. */
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-card.lm-menu-theme,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-card[class*="card-container"] {
+  background: var(--ff-window) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 7px !important;
+  box-shadow: var(--ff-frame-shadow) !important;
+  color: #fff !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list {
+  background: transparent !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list button {
+  color: #fff !important;
+  font-family: var(--ff-pixel-ui) !important;
+  border-radius: 4px !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme:hover,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list button:hover {
+  background: rgba(255, 215, 94, 0.16) !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme:hover *,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-action-list button:hover * {
+  color: var(--ff-gold) !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container mat-divider {
+  border-top-color: rgba(255, 255, 255, 0.35) !important;
 }
 
 /* Tooltips. .mdc-tooltip only — a classless [role="tooltip"] a11y describer
@@ -888,6 +935,32 @@ html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:hover * {
   color: var(--ff-gold) !important;
 }
 
+/* The ACTIVE row (current page / open conversation): Gemini paints it as a
+   flat #171717 pill, which read as an unthemed hole. Here it is the cursor
+   row of a JRPG menu — gold wash, thin white ring, gold text. */
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item.is-active,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item[aria-current="page"] {
+  background: linear-gradient(180deg, rgba(255, 215, 94, 0.24), rgba(255, 215, 94, 0.1)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75), 0 1px 0 rgba(3, 6, 22, 0.5) !important;
+  border-radius: 5px !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item.is-active,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item.is-active *,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item[aria-current="page"],
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a.gem-nav-list-item[aria-current="page"] * {
+  color: var(--ff-gold) !important;
+}
+
+/* The trailing "More options" affordance on chat rows keeps just its arrow:
+   the Material state layer that used to draw a grey disc goes gold-wash so
+   hover feedback survives without the stock circle. */
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content gem-icon-button button {
+  background: transparent !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content gem-icon-button button .mat-mdc-button-persistent-ripple::before {
+  background: rgba(255, 215, 94, 0.35) !important;
+}
+
 /* --------------------------------------------------- sidebar icon remaps */
 
 /* Gemini's sidebar icons are mat-icon font ligatures, so rows are keyed by
@@ -956,11 +1029,33 @@ html[data-cct-theme="final-fantasy-gemini"] side-navigation-content [class*="con
   overflow: visible;
 }
 
+/* ------------------------------------------------- sidebar section boxes */
+
+/* Three menu windows, sized by their content: the fixed pair (New chat +
+   Search chats, div.top-action-list's nav list), the scrolling quartet
+   (Images…Gems, .top-action-list-scrollable), and the Notebooks section
+   (an <expandable-section> holding /notebook links). They are separate
+   containers in the DOM — the quartet lives inside the infinite-scroller —
+   so each gets its own complete frame rather than a seamed one that would
+   tear when the list scrolls. Recent stays open, as Chats does on the
+   other sites. */
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content div.top-action-list mat-nav-list:not([class*="removed"]),
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content mat-nav-list.top-action-list-scrollable,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content expandable-section:has(a[href^="/notebook"]) {
+  display: block;
+  background: rgba(13, 20, 70, 0.42) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 7px !important;
+  margin: 2px 8px 10px !important;
+  padding: 3px 4px !important;
+}
+
 /* Section labels (Notebooks / Recent) as small gold menu headers. */
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content h1,
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content h2,
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content h3,
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content .title,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content .expandable-section-title,
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content [class*="section-title"] {
   font-family: var(--ff-pixel-ui) !important;
   color: var(--ff-gold) !important;
@@ -1079,7 +1174,19 @@ html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor:focus-visib
   outline: none !important;
 }
 
-/* Scrollbar as a menu slider: white rail, gold thumb. */
+/* Scrollbar as a menu slider: white rail, gold thumb. Inside the composer
+   pill the editor's own scroller must NOT wear it — a 9px gold thumb next
+   to the caret read as a mystery gold block — so the pill hides its
+   scrollbars entirely, like Gemini's own UI does. */
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 ::-webkit-scrollbar,
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea ::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+}
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor {
+  scrollbar-width: none;
+}
 html[data-cct-theme="final-fantasy-gemini"] ::-webkit-scrollbar { width: 9px; height: 9px; }
 html[data-cct-theme="final-fantasy-gemini"] ::-webkit-scrollbar-thumb {
   background: var(--ff-gold) !important;
