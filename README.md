@@ -1,4 +1,4 @@
-# Yume Forge Modified
+# Yume Forge Modified — Claude, ChatGPT & Gemini Themes
 
 Themes for **claude.ai**, **chatgpt.com** and **gemini.google.com**, in one
 Chrome extension.
@@ -6,19 +6,18 @@ Chrome extension.
 A fork of [Yume Themes for Claude](https://chromewebstore.google.com/detail/ipfkpkhddkhndibomlaklpfaikjfdlgb)
 (by Mohamed El-Harras) with:
 
-- **A Final Fantasy theme** — royal-blue menu windows with white frames, pixel
-  fonts, a crystal beside every reply, a four-person party idling on the
-  message box, a moogle who supervises the replies, menu sounds, and the
-  occasional chocobo drive-by. Works on **all three sites**: all of claude.ai
-  (Home and the Code tab), chatgpt.com, and gemini.google.com (the Chat and
-  Spark surfaces alike).
+- **A Final Fantasy theme for each site** — royal-blue menu windows with white
+  frames, pixel fonts, a crystal beside every reply, a four-person party idling
+  on the message box, a moogle who supervises the replies, menu sounds, and the
+  occasional chocobo drive-by. One 💎 card per popup tab, ported separately to
+  each site's own markup: all of claude.ai (Home and the Code tab), chatgpt.com,
+  and gemini.google.com (the Chat and Spark surfaces alike).
 - **Claude / OpenAI / Gemini tabs in the popup** — each site keeps its own
-  selected theme, so you can run Final Fantasy on all of them, or mix and
-  match.
+  selected theme, so you can run Final Fantasy on all three, or mix and match.
 - **Import / export / share** — every theme card has a **⤓** button that
   saves a self-contained file and copies a share code. Import a file, a
   pasted code, or a zip of either.
-- The original's 24 Claude themes, untouched.
+- The original's 24 Claude themes, untouched — 27 bundled themes in all.
 
 ## Install (Chrome)
 
@@ -42,33 +41,46 @@ new zip, replace the folder, and press **↻** on the extension's card.
 
 ### Theme settings
 
-Cards with options show a **⚙** — Final Fantasy has three: colourful text,
-menu sounds, and the horizon scenery. There are also buttons in there to
-summon the chocobo on demand; left alone, he visits on his own every few
-minutes.
+Cards with options show a **⚙** — each Final Fantasy card has three: colourful
+text, menu sounds, and the horizon scenery. The chocobo buttons in there send
+one to the open tab for that card's site; left alone, he visits on his own
+every few minutes.
 
 ## Sharing themes
 
 **⤓** on any card saves a `.yume.json` file and copies a `YUME1:` code —
 send either one. **📥 Import a theme** (or **Paste code**) brings one in;
 imports are self-contained (sprites, fonts and sounds travel inside the file)
-and never overwrite your existing themes.
+and never overwrite your existing themes. A shared theme carries the site it
+was built for, so an imported Claude / ChatGPT / Gemini theme lands under the
+right popup tab and never overwrites another site's selection; older builds
+simply ignore the field.
 
 ## Trust notes (what changed from the store version)
 
 - The store version's background service worker — which fetched CSS from a
   remote repo every 6 hours and injected it into claude.ai — is **removed**.
   Nothing remote ever lands in your sessions.
+- It runs on three hosts and nowhere else — claude.ai, chatgpt.com and
+  gemini.google.com — declared in the manifest; there is no `<all_urls>`
+  match and no host permission beyond those three.
 - Permissions are just `storage`.
 - Theme files are data-only: nothing a theme contains can execute.
 
 ## For developers
 
-`node tools/check.mjs` runs every test suite (engine, content-script smoke
-drives for both sites, glyph states, packaged-theme round-trips, popup, zip).
-`node tools/package.mjs --out ./release` builds the shareable zip. The asset
-generators and their sources are documented in `tools/` — the generated
-`sprites/*.css` files each name the tool that wrote them.
+`node tools/pack-theme.mjs final-fantasy final-fantasy-gpt final-fantasy-gemini`
+writes the shareable `dist/<id>.yume.json` + `.yume.txt` exports (those three
+are the ones worth packaging; `--all` does every bundled theme).
+`node tools/check.mjs` runs the suites (engine, content-script smoke drives for
+all three sites, glyph states, packaged-theme round-trips, popup, zip) — the
+popup and zip suites skip until `dist/` and `release/yume-forge-modified.zip`
+exist. `node tools/package.mjs --out ./release` builds the shareable zip.
+`tools/mock.html` and `tools/gemini-mock.html` render the theme against stand-in
+Claude and Gemini markup for visual iteration offline. The theme studio
+(chrome://extensions → Details → Extension options) edits and creates themes.
+The asset generators and their sources are documented in `tools/` — the
+generated `sprites/*.css` files each name the tool that wrote them.
 
 ## Credits
 
@@ -78,5 +90,5 @@ generators and their sources are documented in `tools/` — the generated
 
 This is an unofficial, non-commercial fan project. Final Fantasy and related
 names and characters are trademarks or copyrighted works of their respective
-owners. This project is not affiliated with or endorsed by Square Enix or
-OpenAI or Anthropic.
+owners. This project is not affiliated with or endorsed by Square Enix,
+Anthropic, OpenAI or Google.

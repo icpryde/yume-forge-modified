@@ -411,12 +411,24 @@ themeCss.size === themeFiles.length
   ? ok(`all ${themeFiles.length} theme stylesheets are wired into a content script`)
   : fail(`themes/ has ${themeFiles.length} stylesheets but the manifests wire ${themeCss.size}`);
 
-// Both sites must be able to load the fonts and sprites those sheets use.
+// All three sites must be able to load the fonts and sprites those sheets use.
 const war = (manifest.web_accessible_resources || [])[0] || {};
-["https://claude.ai/*", "https://chatgpt.com/*"].every((m) => (war.matches || []).includes(m))
-  ? ok("web_accessible_resources covers claude.ai and chatgpt.com")
+["https://claude.ai/*", "https://chatgpt.com/*", "https://gemini.google.com/*"]
+  .every((m) => (war.matches || []).includes(m))
+  ? ok("web_accessible_resources covers claude.ai, chatgpt.com and gemini.google.com")
   : fail("web_accessible_resources matches: " + JSON.stringify(war.matches) +
          " — fonts/sprites would 404 on the missing site");
+
+// A stale archive is the failure this whole suite exists to catch and the one
+// it could not see: every other check here reads the zip against ITSELF, so an
+// old build is internally consistent and sails through. Publishing that zip
+// ships a version nobody tested — which is exactly what nearly happened for
+// the gemini release, where release/ still held the previous build.
+const repoVersion = JSON.parse(await readFile(resolve(ROOT, "manifest.json"), "utf8")).version;
+manifest.version === repoVersion
+  ? ok(`zip manifest version matches the tree (${repoVersion})`)
+  : fail(`zip is version ${manifest.version} but the tree is ${repoVersion} — ` +
+         "rebuild: node tools/package.mjs --out ./release");
 
 await rm(tmp, { recursive: true, force: true });
 

@@ -188,12 +188,17 @@ async function remove() {
 
   themes = await E.deleteTheme(current.id);
 
-  // If the deleted theme was the active one, fall back to Claude's default so
-  // claude.ai isn't left pointing at a theme that no longer exists.
-  chrome.storage.sync.get(E.SELECTED_KEY, (d) => {
-    if (d[E.SELECTED_KEY] === current.id) {
-      chrome.storage.sync.set({ [E.SELECTED_KEY]: "default" });
-    }
+  // If the deleted theme was the active pick on ANY site, fall back to that
+  // site's default so no site is left pointing at a theme that no longer
+  // exists. Checking only claude's slot was fine when claude was the only
+  // site; an imported ChatGPT or Gemini theme deleted while selected used to
+  // leave its slot aimed at a dead id, and that site rendered unthemed until
+  // something was picked again.
+  const keys = E.SITES.map((s) => E.selectedKeyFor(s));
+  chrome.storage.sync.get(keys, (d) => {
+    const clear = {};
+    for (const k of keys) if (d[k] === current.id) clear[k] = "default";
+    if (Object.keys(clear).length) chrome.storage.sync.set(clear);
     if (themes.length) selectTheme(themes[0].id);
     else newTheme();
     status("Deleted.", "ok");

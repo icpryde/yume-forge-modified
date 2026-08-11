@@ -44,6 +44,7 @@ const INCLUDE = [
   "manifest.json",
   "content.js",
   "README.md",
+  "CHANGELOG.md",
   "lib/theme-engine.js",
   "lib/packer.js",
   "lib/themezip.js",
@@ -93,8 +94,10 @@ async function buildExtensionZip() {
   // Finder litter copies along with the directories it lives in — and so do
   // the test harnesses' scratch pages (tools/.*.html and friends). Prune every
   // dotfile: nothing legitimate in this tree hides behind a dot.
-  await sh("find", [stage, "-name", ".DS_Store", "-delete"]);
-  await sh("find", [join(stage, "tools"), "-name", ".*", "-type", "f", "-delete"]);
+  // Tree-wide, not just tools/: the comment always claimed every dotfile, and
+  // a stray editor swap file or .env outside tools/ would otherwise ship.
+  // This subsumes the .DS_Store sweep.
+  await sh("find", [stage, "-name", ".*", "-type", "f", "-delete"]);
 
   const out = join(OUT, `${NAME}.zip`);
   await rm(out, { force: true });
