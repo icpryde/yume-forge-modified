@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.7 — 2026-08-11
+
+- The submit button's box, final form: covered the bare gem-icon-button
+  wrapper (some builds skip the .send-button class), the Material fill
+  drawn on inner-span PSEUDO layers (inline pins can't reach pseudos —
+  the scroll-fade lesson again), and per-keystroke button recreation
+  (stylesheet rules re-apply instantly; inline pins don't). Wrapper-level
+  only, so the mic and mode chips keep their look and the hand — the send
+  button's own ::after — is untouched.
+
 ## 1.3.6 — 2026-08-11
 
 - The send/submit slot is stripped of every fill UNCONDITIONALLY — no

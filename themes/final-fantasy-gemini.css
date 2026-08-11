@@ -520,15 +520,41 @@ html[data-cct-theme="final-fantasy-gemini"] mat-card[data-yume-menu] .mat-ripple
   background-color: rgba(255, 215, 94, 0.25) !important;
 }
 
-/* The send slot's wrappers carry stock fills of their own (the box behind
-   the select hand); stylesheet backup for the JS sweep. */
+/* The send slot's box, final form. Three ways it dodged every fix so far:
+   the painting wrapper is sometimes a BARE gem-icon-button (no .send-button
+   class to key on), Material draws button fills on inner-span PSEUDO layers
+   (which inline pins cannot touch, like the scroll-fade), and Angular
+   recreates the button per keystroke (outrunning any JS re-pin). One
+   stylesheet block covers all three — CSS re-applies instantly on
+   recreation. Wrapper-level only: the mic/mode chips style their BUTTON
+   elements, which stay untouched, and the hand itself is the send button's
+   own ::after, deliberately absent from the pseudo list. */
 html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"],
 html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button,
-html[data-cct-theme="final-fantasy-gemini"] .send-button-container {
+html[data-cct-theme="final-fantasy-gemini"] .send-button-container,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper gem-icon-button,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .persistent-mic gem-icon-button {
   background: transparent !important;
   background-color: transparent !important;
+  background-image: none !important;
   border: 0 !important;
   box-shadow: none !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] span::before,
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] span::after,
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] button::before,
+html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button span::before,
+html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button span::after,
+html[data-cct-theme="final-fantasy-gemini"] gem-icon-button.send-button::before,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper gem-icon-button span::before,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper gem-icon-button span::after,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper gem-icon-button::before {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
 }
 
 html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container button.lm-menu-item-theme:hover,
