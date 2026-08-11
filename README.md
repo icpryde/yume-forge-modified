@@ -1,6 +1,7 @@
 # Yume Forge Modified
 
-Themes for **claude.ai** and **chatgpt.com**, in one Chrome extension.
+Themes for **claude.ai**, **chatgpt.com** and **gemini.google.com**, in one
+Chrome extension.
 
 A fork of [Yume Themes for Claude](https://chromewebstore.google.com/detail/ipfkpkhddkhndibomlaklpfaikjfdlgb)
 (by Mohamed El-Harras) with:
@@ -8,10 +9,12 @@ A fork of [Yume Themes for Claude](https://chromewebstore.google.com/detail/ipfk
 - **A Final Fantasy theme** — royal-blue menu windows with white frames, pixel
   fonts, a crystal beside every reply, a four-person party idling on the
   message box, a moogle who supervises the replies, menu sounds, and the
-  occasional chocobo drive-by. Works on **both sites**: all of claude.ai
-  (Home and the Code tab) and chatgpt.com.
-- **Claude / OpenAI tabs in the popup** — each site keeps its own selected
-  theme, so you can run Final Fantasy on both, or mix and match.
+  occasional chocobo drive-by. Works on **all three sites**: all of claude.ai
+  (Home and the Code tab), chatgpt.com, and gemini.google.com (the Chat and
+  Spark surfaces alike).
+- **Claude / OpenAI / Gemini tabs in the popup** — each site keeps its own
+  selected theme, so you can run Final Fantasy on all of them, or mix and
+  match.
 - **Import / export / share** — every theme card has a **⤓** button that
   saves a self-contained file and copies a share code. Import a file, a
   pasted code, or a zip of either.
@@ -27,9 +30,9 @@ A fork of [Yume Themes for Claude](https://chromewebstore.google.com/detail/ipfk
 3. Open `chrome://extensions` in Chrome.
 4. Turn on **Developer mode** (toggle in the top right).
 5. Click **Load unpacked** and pick the unzipped `yume-forge-modified` folder.
-6. Open (or reload) claude.ai or chatgpt.com, click the extension's icon, and
-   pick a theme — use the **Claude / OpenAI** tabs at the top of the popup to
-   choose which site you're theming.
+6. Open (or reload) claude.ai, chatgpt.com or gemini.google.com, click the
+   extension's icon, and pick a theme — use the **Claude / OpenAI / Gemini**
+   tabs at the top of the popup to choose which site you're theming.
 
 Also works in Arc and other Chromium browsers — use `arc://extensions` (or the
 equivalent) instead in step 3.

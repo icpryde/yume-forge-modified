@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.3.0 — 2026-08-11
+
+Final Fantasy comes to gemini.google.com.
+
+- The popup gains a **Gemini** tab with its own selection slot
+  (`cctThemeGemini`); imports carrying `site: "gemini"` file themselves under
+  it automatically.
+- New bundled theme: **💎 Final Fantasy (Gemini)** — the full treatment on
+  the signed-in Pro build, Chat and Spark surfaces alike: night sky +
+  starfields + moon + horizon, menu-window composer (the `input-area-v2`
+  pill) and reply windows with the crystal, pixel fonts (12px grid-aligned
+  prose, "Luminous Symbols" icon ligatures preserved), the party idling on
+  the composer (kneeling under the zero-state greeting), working-Mog under
+  the newest reply for the whole run (stop button + skeleton/shimmer/
+  thinking-banner union, with the ChatGPT port's hysteresis), sidebar
+  icon remaps keyed on link hrefs (Gems wear the crystal), the Chat/Spark
+  toggle as a two-tab menu window with a gold active tab, the mavatar
+  footer as its own window, gem-menu popovers and mdc tooltips framed,
+  menu sounds, and all three chocobo runs staged off the composer pill.
+- DOM facts that shaped the port, probed live: the visible composer pill
+  belongs to the `input-area-v2` host (fieldset and inner wrappers are
+  transparent); `div.response-container` nests INSIDE the
+  `<response-container>` element (Mog anchors the div — the dual selector
+  would have drawn two of him); settled replies keep only an empty
+  `thinking-overlay` where the thoughts UI lived (excluded from the reply
+  stamp, never given a border); a hidden pagination spinner idles in the
+  history scroller at rest, so the busy test scopes spinners to the newest
+  reply.
+- Test coverage: a gemini smoke fixture (full working-stamp lifecycle,
+  chocobo mounts, slot isolation), a gemini round-trip in pack-test (41
+  probes incl. the pill/bubble inline-radius wars and both Mog slots),
+  popup Gemini-tab assertions, and tools/gemini-mock.html for visual
+  iteration offline.
+
 ## 1.2.0 — 2026-08-01
 
 The ChatGPT theme, finished against the real logged-in site.

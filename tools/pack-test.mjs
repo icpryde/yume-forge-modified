@@ -771,7 +771,255 @@ if (gdrew < 6) {
   console.log(`ok   gpt sanity      ${gdrew} gpt probes draw sprite images`);
 }
 
+/* --------------------------------------------------------------- gemini */
+
+// The Gemini theme, same treatment: bundled vs packaged-and-reimported over a
+// gemini.google.com-shaped fixture (Angular custom elements, mat-icon
+// ligature icons, the input-area-v2 pill), then MUST checks.
+const GEM_ID = "final-fantasy-gemini";
+const mmeta = (data.themes || data).find((t) => t.id === GEM_ID);
+const mpacked = await P.packTheme(mmeta, readText, readBase64);
+const mimported = E.decodeShare(E.encodeShare(mpacked));
+const mfeats = (mimported.features || []).join(" ");
+
+const GEM_BODY = `
+<bard-sidenav><side-navigation-content>
+  <mode-switcher-toggle><div class="app-tabs">
+    <button class="app-tab app-tab--active">Chat</button>
+    <button class="app-tab">Spark</button>
+  </div></mode-switcher-toggle>
+  <div class="overflow-container">
+    <gem-nav-list-item><a href="/app"><mat-icon class="lumi-symbols">edit</mat-icon><span>New chat</span></a></gem-nav-list-item>
+    <gem-nav-list-item><a href="/gems/view"><mat-icon class="lumi-symbols">gem</mat-icon><span>Gems</span></a></gem-nav-list-item>
+    <gem-nav-list-item><a href="/app/abc123">A recent chat</a></gem-nav-list-item>
+  </div>
+  <sidenav-mavatar-footer><div class="mavatar-footer-row">footer</div></sidenav-mavatar-footer>
+</side-navigation-content></bard-sidenav>
+<main>
+  <div class="zero-state-container"><modular-zero-state><h1 class="gds-display-m"><span class="message-text">Your move!</span></h1></modular-zero-state></div>
+  <div class="conversation-container">
+    <user-query><span class="user-query-bubble-with-background" style="border-radius:18px 4px 18px 18px">a question</span></user-query>
+    <model-response data-yume-reply="1" data-yume-latest><div class="response-container">
+      <div class="response-container-content">
+        <model-thoughts><div class="thoughts-container"><div class="thoughts-content">reasoning</div></div></model-thoughts>
+        <message-content><div class="markdown">
+          <p>A finished reply with <strong>bold</strong>, <em>italics</em>, <code>inline_code</code> and <a href="#">a link</a>.</p>
+          <div><div><ul><li><p class="deep-probe">nested five levels down</p></li></ul></div></div>
+          <h3>A heading</h3>
+          <pre><code>fenced_code_keeps_its_own_colours()</code></pre>
+        </div></message-content>
+      </div>
+    </div><message-actions><button aria-label="Copy"></button></message-actions></model-response>
+  </div>
+  <div class="conversation-container">
+    <model-response data-yume-working><div class="response-container">
+      <div class="response-container-content">
+        <model-thoughts><div class="thoughts-container"><div class="thoughts-content">thinking…</div></div></model-thoughts>
+        <div class="skeleton-loader-container in-progress" style="height:16px"></div>
+      </div>
+    </div><div class="thinking-banner below-last-turn">Thinking…</div></model-response>
+  </div>
+  <input-container><fieldset class="input-area-container" style="border-radius:26px;width:640px;position:relative">
+    <input-area-v2><div class="input-area">
+      <rich-textarea class="ql-container"><div class="ql-editor ql-blank" data-placeholder="Ask Gemini"><p><br></p></div></rich-textarea>
+      <div class="trailing-actions-wrapper">
+        <bard-mode-switcher><button data-test-id="bard-mode-menu-button">Pro</button></bard-mode-switcher>
+        <div data-test-id="send-button-container"><gem-icon-button class="send-button"><button aria-label="Send message"><mat-icon class="lumi-symbols">up</mat-icon></button></gem-icon-button></div>
+      </div>
+    </div></input-area-v2>
+    <div class="yume-party">
+      <div class="yume-party-member" data-member="0" data-pose="idle"></div>
+      <div class="yume-party-member" data-member="1" data-pose="fall" style="--pose: 5"></div>
+      <div class="yume-party-member" data-member="2" data-pose="idle"
+           style="animation: ff-member-idle 1s steps(1) -0.75s infinite paused"></div>
+      <div class="yume-party-member" data-member="3" data-pose="idle"></div>
+    </div>
+  </fieldset></input-container>
+  <div class="yume-choco-sky"><div class="yume-choco"></div></div>
+</main>
+<div class="popover-menu"><gem-menu role="menu"><gem-menu-item class="selected">2.5 Pro</gem-menu-item></gem-menu></div>
+<mat-tooltip-component><div class="mdc-tooltip gem-tooltip">a tooltip</div></mat-tooltip-component>`;
+
+const GEM_PROBES = JSON.stringify([
+  ["gem sky",          "body",                                   null,       ["backgroundImage", "backgroundAttachment"]],
+  ["gem moon",         "html",                                   "::before", ["content", "backgroundImage"]],
+  ["gem motes",        "html",                                   "::after",  ["content", "backgroundImage", "animationName"]],
+  ["gem stars",        "body",                                   "::after",  ["content", "animationName"]],
+  ["gem greeting",     "modular-zero-state h1",                  null,       ["fontFamily", "textShadow"]],
+  ["gem user bubble",  ".user-query-bubble-with-background",     null,       ["backgroundImage", "borderTopWidth", "borderTopColor", "borderRadius"]],
+  ["gem reply window", "model-response[data-yume-reply] .response-container-content", null, ["backgroundImage", "borderTopWidth", "borderRadius", "animationName"]],
+  ["gem crystal",      "model-response[data-yume-reply] .response-container-content", "::before", ["content", "backgroundImage", "width", "height", "animationName"]],
+  ["gem reply body",   ".markdown p",                            null,       ["fontFamily", "color"]],
+  ["gem reply deep",   ".markdown .deep-probe",                  null,       ["fontSize"]],
+  ["gem rich bold",    ".markdown strong",                       null,       ["color"]],
+  ["gem rich italic",  ".markdown em",                           null,       ["color"]],
+  ["gem rich heading", ".markdown h3",                           null,       ["color"]],
+  ["gem rich code",    ".markdown code:not(pre code)",           null,       ["color"]],
+  ["gem fenced code",  ".markdown pre code",                     null,       ["color"]],
+  ["gem thoughts",     "model-thoughts",                         null,       ["borderTopWidth", "borderRadius"]],
+  ["gem think banner", ".thinking-banner",                       null,       ["backgroundImage", "fontFamily", "marginLeft"]],
+  ["gem thinking mog", "model-response[data-yume-working] .response-container", "::after", ["content", "backgroundImage", "animationName"]],
+  ["gem parked mog",   "model-response[data-yume-latest] .response-container", "::after", ["content"]],
+  ["gem composer",     "fieldset.input-area-container",          null,       ["backgroundImage", "borderTopWidth", "borderRadius", "animationName", "zIndex"]],
+  ["gem mode pill",    'button[data-test-id="bard-mode-menu-button"]', null, ["borderTopWidth", "fontFamily"]],
+  ["gem send hand",    'button[aria-label="Send message"]',      "::after",  ["content", "backgroundImage", "transform", "width"]],
+  ["gem send glyph",   'button[aria-label="Send message"] > mat-icon', null, ["opacity"]],
+  ["gem party row",    "fieldset > .yume-party",                 null,       ["position", "zIndex"]],
+  ["gem kneel pose",   '.yume-party-member[data-member="0"][data-pose="idle"]', null, ["backgroundPositionX", "animationName"]],
+  ["gem fall pose",    '.yume-party-member[data-pose="fall"]',   null,       ["backgroundPositionX"]],
+  ["gem mid-bob",      '.yume-party-member[data-member="2"]',    null,       ["backgroundPositionX"]],
+  ["gem idle anim",    '.yume-party-member[data-member="3"]',    null,       ["animationName"]],
+  ["gem sidebar",      "bard-sidenav",                           null,       ["backgroundImage", "borderRightWidth", "borderRightColor"]],
+  ["gem tab box",      "mode-switcher-toggle .app-tabs",         null,       ["borderTopWidth", "borderRadius"]],
+  ["gem active tab",   "button.app-tab.app-tab--active",         null,       ["backgroundImage", "color"]],
+  ["gem new icon",     'a[href="/app"] mat-icon',                "::after",  ["content", "backgroundImage", "width"]],
+  ["gem new glyph",    'a[href="/app"] mat-icon',                null,       ["color"]],
+  ["gem gems icon",    'a[href^="/gems"] mat-icon',              "::after",  ["backgroundImage"]],
+  ["gem row hand",     'a[href="/app"]',                         "::before", ["content", "backgroundImage", "opacity"]],
+  ["gem footer",       "sidenav-mavatar-footer",                 null,       ["backgroundImage", "borderTopWidth", "borderRadius"]],
+  ["gem menu",         ".popover-menu",                          null,       ["backgroundImage", "borderTopWidth", "borderRadius"]],
+  ["gem menu sel",     "gem-menu-item.selected",                 null,       ["color"]],
+  ["gem tooltip",      ".mdc-tooltip.gem-tooltip",               null,       ["backgroundImage", "borderTopWidth", "fontFamily"]],
+  ["gem choco sky",    ".yume-choco-sky",                        null,       ["position", "zIndex"]],
+  ["gem choco spr",    ".yume-choco-sky .yume-choco",            null,       ["animationName", "backgroundSize"]],
+]);
+
+const GEM_REPORT = REPORT.replace("const probes = " + PROBES, "const probes = " + GEM_PROBES);
+if (GEM_REPORT === REPORT) throw new Error("GEM_REPORT substitution found nothing — the probe anchor moved");
+
+const mpage = (attrs, head) => `<!doctype html>
+<html lang="en" ${attrs}>
+<head><meta charset="utf-8">
+<style>
+  html, body { margin: 0; min-height: 600px; }
+  bard-sidenav { display: block; width: 240px; float: left; min-height: 600px; }
+  gem-nav-list-item a { display: block; padding: 6px 10px; position: relative; }
+  mat-icon { display: inline-block; width: 20px; height: 20px; }
+  main { min-height: 600px; padding: 20px; margin-left: 250px; }
+  .app-tabs { display: flex; }
+  fieldset.input-area-container { border: 0; }
+</style>
+${head}
+</head>
+<body class="dark-theme">${GEM_BODY}
+<script>window.addEventListener("load", () => { ${GEM_REPORT} });</script>
+</body></html>`;
+
+const mlinkHead = [
+  "fonts/fonts.css", ...P.SPRITE_SHEETS, `themes/${GEM_ID}.css`,
+].map((p) => `<link rel="stylesheet" href="../${p}">`).join("\n");
+const mcompiled = E.compileCss(mimported);
+const mimportedHead = `<style>\n${mcompiled}\n</style>`;
+
+const MA = rel("tools/.pack-ma.html");
+const MB = rel("tools/.pack-mb.html");
+const MOPT = 'data-yume-opt="rich-text menu-sounds bottom-scenery"';
+await writeFile(MA, mpage(`data-cct-theme="${GEM_ID}" data-yume-feat="party stars composer-glow replies" ${MOPT}`, mlinkHead), "utf8");
+await writeFile(MB, mpage(`data-cct-theme="${mimported.id}" data-yume-feat="${mfeats}" ${MOPT}`, mimportedHead), "utf8");
+
+const [ma, mb] = await Promise.all([probe(MA), probe(MB)]);
+await Promise.all([rm(MA, { force: true }), rm(MB, { force: true })]);
+
+console.log("");
+for (let i = 0; i < ma.length; i++) {
+  const [label, av] = ma[i];
+  const bv = mb[i][1];
+  if (typeof av === "string" || typeof bv === "string") {
+    bad++;
+    console.log(`FAIL ${label.padEnd(16)} ${av} / ${bv}`);
+    continue;
+  }
+  const diffs = Object.keys(av).filter((k) => av[k] !== bv[k]);
+  checks += Object.keys(av).length;
+  if (diffs.length) {
+    bad++;
+    console.log(`FAIL ${label.padEnd(16)} ` +
+      diffs.map((k) => `${k}: bundled=${av[k]}  imported=${bv[k]}`).join("\n                      "));
+  } else {
+    console.log(`ok   ${label.padEnd(16)} ${Object.keys(av).length} propert${Object.keys(av).length === 1 ? "y" : "ies"} match`);
+  }
+}
+
+const GEM_MUST = {
+  "gem sky":          ["backgroundImage", /^img#/],
+  "gem moon":         ["backgroundImage", /img#|url\(/],
+  "gem greeting":     ["fontFamily", /Press Start/],
+  "gem user bubble":  ["backgroundImage", /linear-gradient/],
+  "gem user radius":  null,
+  "gem reply window": ["borderTopWidth", /^2px$/],
+  "gem crystal":      ["width", /^16px$/],
+  "gem reply body":   ["fontFamily", /Press Start/],
+  "gem reply colour": null,
+  "gem reply deep":   ["fontSize", /^12px$/],
+  "gem think banner": ["fontFamily", /Silkscreen/],
+  "gem thinking mog": ["animationName", /ff-moogle-frames/],
+  // Both a latest and a working reply are mounted; the parked Mog must
+  // stand down so he never doubles mid-run.
+  "gem parked mog":   ["content", /^none$/],
+  "gem composer":     ["animationName", /ff-breathe/],
+  "gem composer rad": null,
+  "gem send hand":    ["backgroundImage", /img#|url\(/],
+  "gem send glyph":   ["opacity", /^0$/],
+  "gem kneel pose":   ["backgroundPositionX", /^80%$/],
+  "gem fall pose":    ["backgroundPositionX", /^100%$/],
+  "gem mid-bob":      ["backgroundPositionX", /^20%$/],
+  // A working reply is mounted, so idle members must be bobbing.
+  "gem idle anim":    ["animationName", /ff-member-idle/],
+  "gem sidebar":      ["borderRightWidth", /^2px$/],
+  "gem tab box":      ["borderTopWidth", /^2px$/],
+  "gem active tab":   ["backgroundImage", /linear-gradient/],
+  "gem new icon":     ["backgroundImage", /^img#|^url\(/],
+  // The stock ligature glyph hides by colour (the slot's size is load-bearing).
+  "gem new glyph":    ["color", /rgba\(0, 0, 0, 0\)|transparent/],
+  "gem row hand":     ["opacity", /^0$/],
+  "gem footer":       ["backgroundImage", /linear-gradient/],
+  "gem menu":         ["backgroundImage", /linear-gradient/],
+  "gem menu sel":     ["color", /rgb\(255, 215, 94\)/],
+  "gem tooltip":      ["fontFamily", /Silkscreen/],
+  "gem choco sky":    ["position", /^fixed$/],
+  "gem choco spr":    ["animationName", /ff-choco-gait/],
+};
+
+for (const [label, spec] of Object.entries(GEM_MUST)) {
+  if (!spec) continue;
+  const [prop, want] = spec;
+  const row = ma.find(([l]) => l === label);
+  const got = row && typeof row[1] === "object" ? row[1][prop] : undefined;
+  if (want.test(String(got))) {
+    console.log(`ok   ${label.padEnd(16)} is genuinely themed (${prop}: ${got})`);
+  } else {
+    bad++;
+    console.log(`FAIL ${label.padEnd(16)} ${prop} is "${got}" — the gemini theme rule is not applying`);
+  }
+}
+
+// Inline-style wars: the pill ships border-radius:26px and the bubble an
+// asymmetric 18px set inline; the windows must land on 9px/7px.
+{
+  const comp = ma.find(([l]) => l === "gem composer");
+  const r = comp && typeof comp[1] === "object" ? comp[1].borderRadius : "?";
+  if (r === "9px") console.log(`ok   ${"gem composer rad".padEnd(16)} 9px beats the inline 26px pill`);
+  else { bad++; console.log(`FAIL ${"gem composer rad".padEnd(16)} composer radius is "${r}" — the inline 26px is winning`); }
+  const bub = ma.find(([l]) => l === "gem user bubble");
+  const br = bub && typeof bub[1] === "object" ? bub[1].borderRadius : "?";
+  if (br === "7px") console.log(`ok   ${"gem user radius".padEnd(16)} 7px beats the inline 18px set`);
+  else { bad++; console.log(`FAIL ${"gem user radius".padEnd(16)} bubble radius is "${br}"`); }
+  const body = ma.find(([l]) => l === "gem reply body");
+  const col = body && typeof body[1] === "object" ? body[1].color : "?";
+  if (col === "rgb(255, 255, 255)") console.log(`ok   ${"gem reply colour".padEnd(16)} stated explicitly (white), not inherited`);
+  else { bad++; console.log(`FAIL ${"gem reply colour".padEnd(16)} reply text computes to ${col}`); }
+}
+
+const mdrew = ma.filter(([, v]) => typeof v === "object" &&
+  Object.values(v).some((x) => /img#|url\(/.test(String(x)))).length;
+if (mdrew < 6) {
+  bad++;
+  console.log(`FAIL gem sanity      only ${mdrew} probes drew an image on the gemini side`);
+} else {
+  console.log(`ok   gem sanity      ${mdrew} gemini probes draw sprite images`);
+}
+
 console.log(bad
   ? `\n${bad} probe(s) differ — that much of the theme does not survive export`
-  : `\nround-trip clean — ${checks} properties identical across ${a.length + ga.length} probes`);
+  : `\nround-trip clean — ${checks} properties identical across ${a.length + ga.length + ma.length} probes`);
 process.exit(bad ? 1 : 0);

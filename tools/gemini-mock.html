@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<!--
+  Yume Forge — offline theme harness for the GEMINI port.
+
+  Mirrors the parts of gemini.google.com's DOM that the theme actually hooks:
+  the bard-sidenav column with its href-keyed nav rows, a conversation turn
+  (user-query bubble + model-response with thoughts, markdown, actions), the
+  input-area-v2 composer pill, and the mavatar footer. Element names, classes
+  and data-test-ids below were read off the live signed-in Pro build
+  (2026-08-11).
+
+  Open it directly, or screenshot it:
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
+      --screenshot=/tmp/gemini-mock.png --window-size=1440,900 tools/gemini-mock.html
+
+  ?state=zero  — fresh-chat zero state (greeting, kneeling party)
+  ?state=busy  — mid-run (working Mog hops, party bobs)
+  default      — settled conversation (parked Mog, crystal, breathe)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Yume Forge — gemini theme harness</title>
+
+<link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="stylesheet" href="../sprites/party.css">
+<link rel="stylesheet" href="../sprites/party-strips.css">
+<link rel="stylesheet" href="../sprites/chocobo.css">
+<link rel="stylesheet" href="../sprites/crystal.css">
+<link rel="stylesheet" href="../sprites/menu-crystal.css">
+<link rel="stylesheet" href="../sprites/cursor.css">
+<link rel="stylesheet" href="../sprites/moogle.css">
+<link rel="stylesheet" href="../sprites/items.css">
+<link rel="stylesheet" href="../sprites/nav-icons.css">
+<link rel="stylesheet" href="../sprites/shop-icons.css">
+<link rel="stylesheet" href="../sprites/silhouette.css">
+<link rel="stylesheet" href="../sprites/ambience.css">
+<link rel="stylesheet" href="../themes/final-fantasy-gemini.css">
+
+<style>
+  /* --- a minimal stand-in for Gemini's own base layer -------------------- */
+  :root {
+    --gem-sys-color--surface: #131314;
+    --gem-sys-color--surface-container: #1e1f20;
+    --gem-sys-color--on-surface: #e3e3e3;
+    --gem-sys-color--outline: #8e918f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: "Google Sans", Roboto, system-ui, sans-serif;
+    background: var(--gem-sys-color--surface);
+    color: var(--gem-sys-color--on-surface);
+    height: 100vh; overflow: hidden;
+  }
+  chat-app, chat-app-orchestrator, main.chat-app { display: block; height: 100%; }
+  bard-sidenav-container { display: flex; height: 100%; }
+  bard-sidenav { width: 286px; flex: none; display: flex; flex-direction: column; background: #1e1f20; }
+  side-navigation-content { display: flex; flex-direction: column; height: 100%; padding: 8px; }
+  side-navigation-content .overflow-container { flex: 1; overflow-y: auto; }
+  bard-sidenav-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+  top-bar-actions { display: flex; justify-content: flex-end; padding: 10px 16px; }
+  top-bar-actions .pill { border-radius: 16px; padding: 5px 12px; background: #282a2c; font-size: 13px; }
+  chat-window { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  chat-window-content { flex: 1; min-height: 0; display: block; }
+  #chat-history { height: 100%; overflow-y: auto; }
+  infinite-scroller { display: block; max-width: 760px; margin: 0 auto; padding: 24px 16px 32px; }
+
+  /* sidebar rows */
+  .sparkle-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
+  .segmented { display: flex; background: #131314; border-radius: 18px; padding: 3px; margin: 0 4px 12px; }
+  .segmented button { flex: 1; border: 0; border-radius: 15px; padding: 7px 0; background: transparent; color: inherit; font-size: 13px; }
+  .segmented button.active { background: #37393b; }
+  gem-nav-list-item { display: block; }
+  gem-nav-list-item a, sidenav-mavatar-footer a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 12px; border-radius: 18px;
+    color: inherit; text-decoration: none; font-size: 13.5px;
+  }
+  gem-nav-list-item a:hover { background: #282a2c; }
+  gem-nav-list-item mat-icon, .mavatar-footer-row mat-icon, message-actions mat-icon, .trailing-actions-wrapper mat-icon, .leading-actions-wrapper mat-icon {
+    width: 20px; height: 20px; font-size: 11px; overflow: hidden; display: inline-block; flex: none;
+    font-family: monospace; /* ligature stand-in: shows the name, the theme hides it */
+  }
+  .section-title { font-size: 12px; color: #9a9b9c; padding: 14px 12px 6px; }
+  sidenav-mavatar-footer { display: block; margin-top: auto; }
+  .mavatar-footer-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+  .mavatar-container { width: 28px; height: 28px; border-radius: 50%; background: #7a5563; flex: none; }
+  .mavatar-name { font-size: 13px; }
+
+  /* conversation */
+  .conversation-container { display: flex; flex-direction: column; gap: 18px; padding-bottom: 26px; }
+  user-query { display: flex; justify-content: flex-end; }
+  .user-query-bubble-with-background { background: #333537; border-radius: 18px 4px 18px 18px; padding: 12px 16px; max-width: 80%; }
+  model-response { display: block; }
+  response-container { display: block; }
+  .response-container-content { padding: 4px 0; }
+  model-thoughts { display: block; margin-bottom: 12px; border-radius: 10px; background: #1e1f20; }
+  .thoughts-header button { background: none; border: 0; color: inherit; padding: 10px 14px; font-size: 13px; }
+  .thoughts-container { padding: 0 14px 10px; }
+  .thoughts-content { font-size: 13px; color: #c4c7c5; }
+  message-content { display: block; }
+  .markdown { font-size: 15px; line-height: 1.7; }
+  .markdown p { margin: 0 0 12px; }
+  .markdown h2 { margin: 14px 0 8px; font-size: 19px; }
+  .markdown pre { background: #1b1b1b; border-radius: 8px; padding: 12px; margin: 0 0 12px; overflow: auto; }
+  .markdown table { border-collapse: collapse; margin: 0 0 12px; }
+  .markdown th, .markdown td { border: 1px solid #444746; padding: 5px 10px; font-size: 13.5px; }
+  message-actions { display: flex; gap: 6px; margin-top: 4px; }
+  message-actions button { background: none; border: 0; color: #c4c7c5; width: 32px; height: 32px; border-radius: 50%; }
+  model-response-disclaimers { display: none; }
+
+  /* zero state */
+  modular-zero-state { display: block; text-align: center; padding: 120px 0 40px; }
+  modular-zero-state .zero-state-greeting {
+    font-size: 30px;
+    background: linear-gradient(74deg, #4285f4 0, #9b72cb 30%, #d96570 60%, #d96570 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  /* composer */
+  input-container { display: block; padding: 8px 16px 6px; }
+  fieldset.input-area-container { border: 0; padding: 0; max-width: 760px; margin: 0 auto; }
+  input-area-v2 { display: block; }
+  .input-area { background: #1e1f20; border-radius: 26px; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .text-input-field { display: flex; align-items: center; gap: 8px; }
+  rich-textarea { display: block; flex: 1; }
+  .ql-editor { outline: none; font-size: 15px; min-height: 24px; }
+  .ql-editor.ql-blank::before { content: attr(data-placeholder); color: #9a9b9c; position: absolute; }
+  .ql-editor { position: relative; }
+  .leading-actions-wrapper, .trailing-actions-wrapper { display: flex; align-items: center; gap: 6px; }
+  .text-input-row { display: flex; align-items: center; }
+  .text-input-row rich-textarea { flex: 1; }
+  .leading-actions-wrapper button, .trailing-actions-wrapper button {
+    background: none; border: 0; color: inherit; width: 36px; height: 36px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  button[data-test-id="bard-mode-menu-button"] { width: auto; padding: 0 10px; font-size: 13px; border-radius: 16px; }
+  hallucination-disclaimer { display: block; text-align: center; font-size: 11.5px; color: #9a9b9c; padding: 6px 0 8px; }
+</style>
+</head>
+<body class="dark-theme">
+<script>
+  // Storage seed for the dev shim, exactly as the popup would write it.
+  localStorage.clear();
+  localStorage.setItem("sync:cctThemeGemini", JSON.stringify("final-fantasy-gemini"));
+  window.__YUME_TEST_SITE = "gemini";
+  window.__errors = [];
+  addEventListener("error", (e) => window.__errors.push("error: " + (e.message || e)));
+  addEventListener("unhandledrejection", (e) => window.__errors.push("rejection: " + e.reason));
+</script>
+
+<chat-app-orchestrator id="app-root"><chat-app><main class="chat-app">
+<side-navigation-v2><bard-sidenav-container>
+
+  <bard-sidenav><side-navigation-content>
+    <div class="sparkle-row"><side-nav-sparkle-button><a class="side-nav-sparkle-button" href="/"><span class="gemini-sidenav-text">Gemini</span></a></side-nav-sparkle-button></div>
+    <mode-switcher-toggle><div class="app-tabs segmented">
+      <button class="app-tab app-tab--active">Chat</button>
+      <button class="app-tab">Spark</button>
+    </div></mode-switcher-toggle>
+    <div class="overflow-container has-mode-switcher-toggle">
+      <gem-nav-list-item><a href="/app"><mat-icon class="lumi-symbols">edit_square</mat-icon><span>New chat</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="/search"><mat-icon class="lumi-symbols">search</mat-icon><span>Search chats</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="/images"><mat-icon class="lumi-symbols">image</mat-icon><span>Images</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="/videos"><mat-icon class="lumi-symbols">movie</mat-icon><span>Videos</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="library"><mat-icon class="lumi-symbols">book</mat-icon><span>Library</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="/gems/view"><mat-icon class="lumi-symbols">diamond</mat-icon><span>Gems</span></a></gem-nav-list-item>
+
+      <div class="section-title">Notebooks</div>
+      <gem-nav-list-item><a href="/notebooks/create"><mat-icon class="lumi-symbols">add</mat-icon><span>New notebook</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="/notebook/a8a507a3-1121-46c0-a142-f52083d6b249"><mat-icon class="lumi-symbols">note</mat-icon><span>Field Notes</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="/notebooks/view"><mat-icon class="lumi-symbols">more_horiz</mat-icon><span>All notebooks</span></a></gem-nav-list-item>
+
+      <div class="section-title">Recent</div>
+      <gem-nav-list-item><a href="/app/9637330fe0cfa7d7"><span>Airship maintenance schedule</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="/app/980d5140f18db257"><span>Best gil farming routes</span></a></gem-nav-list-item>
+      <gem-nav-list-item><a href="/app/e726ebbbca432688"><span>Chocobos: Final Fantasy Mounts</span></a></gem-nav-list-item>
+    </div>
+    <sidenav-mavatar-footer>
+      <div class="mavatar-footer-row">
+        <a class="mavatar-footer-left" href="https://accounts.google.com/"><div class="mavatar-container"></div><span class="mavatar-name">Cid Highwind · Pro</span></a>
+        <gem-icon-button data-test-id="mavatar-footer-settings-button"><button><mat-icon class="lumi-symbols">settings</mat-icon></button></gem-icon-button>
+      </div>
+    </sidenav-mavatar-footer>
+  </side-navigation-content></bard-sidenav>
+
+  <bard-sidenav-content>
+    <top-bar-actions><div class="top-bar-actions"><div class="right-section"><span class="pill">2.5 Pro</span></div></div></top-bar-actions>
+    <chat-window><div><chat-window-content>
+      <div id="chat-history"><infinite-scroller class="chat-history-container">
+
+        <div class="zero-state-container" id="zero" hidden><modular-zero-state>
+          <div class="content-container"><div><div class="content-wrapper">
+            <h1 class="gds-display-m zero-state-greeting"><span class="message-text">Your move, Cid!</span></h1>
+          </div></div></div>
+        </modular-zero-state></div>
+
+        <div id="conv-wrap"><div class="conversation-container">
+          <user-query><div class="user-query-bubble-with-background"><div class="query-text"><p>How do I raise a gold chocobo?</p></div></div></user-query>
+
+          <model-response id="reply"><response-container><div class="response-container"><div class="response-container-content has-thoughts">
+            <model-thoughts>
+              <div class="thoughts-header"><button>Show thinking</button></div>
+              <div class="thoughts-container"><div class="thoughts-content">Considering breeding pairs and racing requirements…</div></div>
+            </model-thoughts>
+            <message-content><div class="markdown markdown-main-panel">
+              <p>Raising a <strong>gold chocobo</strong> takes patience, greens, and a little racing glory. The classic route runs through careful breeding.</p>
+              <h2>The short version</h2>
+              <p>Catch <em>great</em> and <em>good</em> chocobos, race them to Class A, then breed with a Carob Nut. Repeat with the blue and green offspring for a black bird, and finish with a Zeio Nut.</p>
+              <pre><code>wonderful + black + Zeio Nut = gold</code></pre>
+              <table><thead><tr><th>Bird</th><th>Nut</th></tr></thead>
+              <tbody><tr><td>Blue × Green</td><td>Carob</td></tr><tr><td>Black × Wonderful</td><td>Zeio</td></tr></tbody></table>
+            </div></message-content>
+          </div></div></response-container>
+          <message-actions>
+            <button aria-label="Good response"><mat-icon class="lumi-symbols">thumb_up</mat-icon></button>
+            <button aria-label="Bad response"><mat-icon class="lumi-symbols">thumb_down</mat-icon></button>
+            <button aria-label="Redo"><mat-icon class="lumi-symbols">refresh</mat-icon></button>
+            <button aria-label="Copy"><mat-icon class="lumi-symbols">content_copy</mat-icon></button>
+          </message-actions>
+          <model-response-disclaimers></model-response-disclaimers>
+          </model-response>
+        </div></div>
+
+      </infinite-scroller></div>
+    </chat-window-content></div>
+
+    <input-container><fieldset class="input-area-container"><input-area-v2><div class="input-area">
+      <div class="text-input-field simplified-input-area"><div class="single-line-format text-input-row">
+        <div class="leading-actions-wrapper">
+          <button aria-label="Upload and tools"><mat-icon class="lumi-symbols">add_2</mat-icon></button>
+        </div>
+        <rich-textarea class="ql-container"><div class="ql-editor ql-blank textarea" data-placeholder="Ask Gemini" contenteditable="true"><p><br></p></div></rich-textarea>
+        <div class="trailing-actions-wrapper">
+          <bard-mode-switcher><button data-test-id="bard-mode-menu-button">Pro <mat-icon class="lumi-symbols">keyboard_arrow_down</mat-icon></button></bard-mode-switcher>
+          <div class="mic-button-container persistent-mic"><button aria-label="Dictate"><mat-icon class="lumi-symbols">mic</mat-icon></button></div>
+          <div class="send-button-container visible persistent-mic" data-test-id="send-button-container"><gem-icon-button class="send-button has-input submit gem-button"><button aria-label="Send message"><mat-icon class="lumi-symbols">arrow_upward</mat-icon></button></gem-icon-button></div>
+        </div>
+      </div></div>
+    </div></input-area-v2></fieldset>
+    <hallucination-disclaimer><p>Gemini is AI and can make mistakes.</p></hallucination-disclaimer>
+    </input-container>
+  </bard-sidenav-content>
+
+</bard-sidenav-container></side-navigation-v2>
+</main></chat-app></chat-app-orchestrator>
+
+<script src="../lib/theme-engine.js"></script>
+<script src="../content.js"></script>
+<script>
+  // ?state=zero | busy | (settled default) — arrange the page AFTER content.js
+  // is live so its observers see the same transitions the real app makes.
+  const state = new URLSearchParams(location.search).get("state") || "settled";
+  if (state === "zero") {
+    document.getElementById("conv-wrap").remove();
+    document.getElementById("zero").hidden = false;
+  } else {
+    // Removed, not hidden: the real app unmounts the zero state, and the
+    // party's kneel rule keys on :has(modular-zero-state).
+    document.getElementById("zero").remove();
+  }
+  if (state === "busy") {
+    // Mid-run shape per the live probe: actions row not mounted yet, stop
+    // button in the send slot, skeleton/thinking-banner loaders mounted,
+    // thoughts still streaming, no answer text yet.
+    const reply = document.getElementById("reply");
+    reply.querySelector("message-actions").remove();
+    reply.querySelector("message-content").remove();
+    const skel = document.createElement("div");
+    skel.className = "skeleton-loader-container in-progress";
+    reply.querySelector(".response-container-content").append(skel);
+    const banner = document.createElement("div");
+    banner.className = "thinking-banner below-last-turn";
+    banner.textContent = "Thinking…";
+    reply.append(banner);
+    const send = document.querySelector('[data-test-id="send-button-container"] button');
+    send.setAttribute("aria-label", "Stop response");
+    send.querySelector("mat-icon").textContent = "stop";
+  }
+</script>
+</body>
+</html>

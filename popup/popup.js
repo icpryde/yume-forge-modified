@@ -21,13 +21,14 @@ let custom = [];
 let optionValues = {};        // { themeId: { optionId: bool } }
 let openSettingsFor = null;   // which card has its panel expanded
 // One selection PER SITE — picking a ChatGPT theme never touches claude.ai.
-let selected = { claude: "default", chatgpt: "default" };
+let selected = { claude: "default", chatgpt: "default", gemini: "default" };
 let activeSite = "claude";    // which tab of themes is on show
 let activeFilter = "all";
 
 const SITE_LABELS = {
   claude: { tab: "Claude", reset: "🤎 Claude Default", page: "claude.ai" },
   chatgpt: { tab: "OpenAI", reset: "🌀 ChatGPT Default", page: "chatgpt.com" },
+  gemini: { tab: "Gemini", reset: "✨ Gemini Default", page: "gemini.google.com" },
 };
 
 /** Present a stored custom theme with the same shape as a bundled one. */
@@ -235,7 +236,7 @@ function settingsPanel(t) {
   // reaches content.js on the open tab the same way theme selection does; no
   // DevTools context-hopping required. The site rides along so only the tab
   // this card belongs to reacts.
-  if (t.id === "final-fantasy" || t.id === "final-fantasy-gpt" || (t.features || []).includes("party")) {
+  if (t.id === "final-fantasy" || t.id === "final-fantasy-gpt" || t.id === "final-fantasy-gemini" || (t.features || []).includes("party")) {
     const row = document.createElement("div");
     row.className = "opt-row opt-preview";
 
@@ -455,10 +456,9 @@ async function init() {
   custom = await E.loadCustom();
   optionValues = await E.loadOptions();
 
-  const keys = [E.selectedKeyFor("claude"), E.selectedKeyFor("chatgpt")];
+  const keys = E.SITES.map((s) => E.selectedKeyFor(s));
   chrome.storage.sync.get(keys, (data) => {
-    selected.claude = data[keys[0]] || "default";
-    selected.chatgpt = data[keys[1]] || "default";
+    E.SITES.forEach((s, i) => { selected[s] = data[keys[i]] || "default"; });
     chrome.storage.local.get("yumeActiveSite", (d) => {
       if (E.SITES.includes(d.yumeActiveSite)) activeSite = d.yumeActiveSite;
       renderSites();

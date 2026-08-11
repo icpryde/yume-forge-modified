@@ -543,6 +543,222 @@ const GPT_PAGE = `<!doctype html>
 </body>
 </html>`;
 
+// The same machinery against gemini.google.com's shape (the signed-in Pro
+// build, 2026-08-11). Angular custom elements throughout; the composer pill
+// is fieldset.input-area-container, turns are .conversation-container with
+// <user-query> and <model-response>, thinking rides .thoughts-container and
+// the skeleton/thinking-banner loaders.
+const GEMINI_PAGE = `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>smoke-gemini</title>
+<script>
+  localStorage.clear();
+  localStorage.setItem("sync:cctThemeGemini", JSON.stringify("final-fantasy-gemini"));
+  window.__YUME_TEST_SITE = "gemini";
+  window.__audioCtxCount = 0;
+  const RealAC = window.AudioContext;
+  window.AudioContext = function (...a) { window.__audioCtxCount++; return new RealAC(...a); };
+</script>
+</head>
+<body class="dark-theme">
+<bard-sidenav><side-navigation-content>
+  <gem-nav-list-item><a href="/app"><mat-icon></mat-icon>New chat</a></gem-nav-list-item>
+</side-navigation-content></bard-sidenav>
+
+<main>
+  <div id="chat-history"><infinite-scroller data-test-id="chat-history-container">
+    <div class="conversation-container">
+      <user-query id="uturn"><span class="user-query-bubble-with-background">hello there</span></user-query>
+      <model-response id="aturn"><div class="response-container">
+        <div class="response-container-content"><message-content><div class="markdown"><p>A filled reply.</p></div></message-content></div>
+      </div><message-actions><button aria-label="Copy"></button></message-actions></model-response>
+    </div>
+  </infinite-scroller></div>
+
+  <div id="footer">
+    <!-- shaped like a usage banner; the hunter must NEVER touch it on gemini -->
+    <div id="gem-decoy" style="width:600px;height:24px">You have 3 messages left today</div>
+    <input-container><fieldset class="input-area-container" style="position:relative;width:640px;height:52px">
+      <input-area-v2><div class="input-area">
+        <rich-textarea><div class="ql-editor" contenteditable="true"></div></rich-textarea>
+      </div></input-area-v2>
+    </fieldset></input-container>
+  </div>
+</main>
+
+<script>
+  window.__errors = [];
+  addEventListener("error", (e) => window.__errors.push("error: " + (e.message || e)));
+  addEventListener("unhandledrejection", (e) => window.__errors.push("rejection: " + e.reason));
+  const realError = console.error;
+  console.error = (...a) => { window.__errors.push("console.error: " + a.join(" ")); realError(...a); };
+</script>
+<script src="../lib/theme-engine.js"></script>
+<script src="../content.js"></script>
+<script>
+  window.__drive = async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const root = document.documentElement;
+    await wait(500);
+
+    if (root.getAttribute("data-cct-theme") !== "final-fantasy-gemini") {
+      window.__errors.push("gemini: cctThemeGemini selection did not reach the html attribute");
+    }
+    if (!document.querySelector("fieldset.input-area-container > .yume-party")) {
+      window.__errors.push("gemini: party did not mount on the composer pill");
+    }
+    if (!document.getElementById("aturn").hasAttribute("data-yume-reply")) {
+      window.__errors.push("gemini: filled reply was not stamped data-yume-reply");
+    }
+    if (document.getElementById("uturn").hasAttribute("data-yume-reply")) {
+      window.__errors.push("gemini: USER query was stamped data-yume-reply");
+    }
+    if (!document.getElementById("aturn").hasAttribute("data-yume-latest")) {
+      window.__errors.push("gemini: newest reply was not stamped data-yume-latest");
+    }
+
+    // Thinking lifecycle: reasoning streams into .thoughts-container while the
+    // visible body is still empty — the reply must stay unstamped (no empty
+    // framed window, no crystal) but MUST carry the working stamp so Mog hops.
+    const conv = document.createElement("div");
+    conv.className = "conversation-container";
+    conv.innerHTML = "<user-query><span class='user-query-bubble-with-background'>q2</span></user-query>" +
+      "<model-response id='thinker'><div class='response-container'>" +
+      "<div class='response-container-content'>" +
+      "<model-thoughts><div class='thoughts-container'><div class='thoughts-content'>streamed reasoning…</div></div></model-thoughts>" +
+      "<div class='skeleton-loader-container in-progress'></div>" +
+      "<message-content><div class='markdown'></div></message-content>" +
+      "</div></div></model-response>";
+    document.querySelector("infinite-scroller").append(conv);
+    await wait(600);
+    const think = document.getElementById("thinker");
+    if (think.hasAttribute("data-yume-reply")) {
+      window.__errors.push("gemini: thoughts-only reply was stamped data-yume-reply mid-thinking");
+    }
+    if (!think.hasAttribute("data-yume-working")) {
+      window.__errors.push("gemini: thinking reply (skeleton mounted, no actions row) was not stamped data-yume-working");
+    }
+    if (document.getElementById("aturn").hasAttribute("data-yume-working")) {
+      window.__errors.push("gemini: a settled reply (actions mounted) was stamped data-yume-working");
+    }
+
+    // The answer lands; loaders unmount; the stamp must flip to reply/latest
+    // while working holds until the actions row mounts.
+    think.querySelector(".skeleton-loader-container").remove();
+    think.querySelector(".markdown").innerHTML = "<p>The answer arrives.</p>";
+    await wait(600);
+    if (!think.hasAttribute("data-yume-reply")) {
+      window.__errors.push("gemini: answered reply was never stamped data-yume-reply");
+    }
+    if (!think.hasAttribute("data-yume-latest")) {
+      window.__errors.push("gemini: latest tag did not move to the newest reply");
+    }
+    if (!think.hasAttribute("data-yume-working")) {
+      window.__errors.push("gemini: working stamp dropped between thinking and the actions row — Mog would vanish mid-run");
+    }
+    const actions = document.createElement("message-actions");
+    actions.innerHTML = "<button aria-label='Copy'></button>";
+    think.append(actions);
+    await wait(2100);
+    if (document.querySelector("[data-yume-working]")) {
+      window.__errors.push("gemini: working stamp survived the actions row mounting past the hold — Mog would hop forever");
+    }
+
+    // Signal-gap hysteresis: a shimmer flips on and off; the stamp must ride
+    // through the gap and clear only past the hold.
+    think.querySelector(".markdown").classList.add("gem-shimmer-active");
+    think.querySelector(".markdown p").append(" more tokens");
+    await wait(600);
+    if (!think.hasAttribute("data-yume-working")) {
+      window.__errors.push("gemini: shimmering reply with a mounted actions row was not stamped working");
+    }
+    think.querySelector(".markdown").classList.remove("gem-shimmer-active");
+    think.querySelector(".markdown p").append(" done.");
+    await wait(500);
+    if (!think.hasAttribute("data-yume-working")) {
+      window.__errors.push("gemini: stamp dropped instantly in a signal gap — the hysteresis is not holding");
+    }
+    await wait(1800);
+    if (document.querySelector("[data-yume-working]")) {
+      window.__errors.push("gemini: working stamp stuck after the shimmer cleared past the hold");
+    }
+
+    // Chocobo parkour: sky bird on <body>, box bird on the pill, party trips.
+    chrome.storage.local.set({ yumeChocoNow: { v: "a", dur: 900 } });
+    await wait(750);
+    if (!document.querySelector("fieldset.input-area-container .yume-choco-a")) {
+      window.__errors.push("gemini choco A: box bird not mounted on the composer pill");
+    }
+    if (!document.querySelector("body > .yume-choco-sky")) {
+      window.__errors.push("gemini choco A: sky bird not mounted on body");
+    }
+    if (![...document.querySelectorAll(".yume-party-member")].some((m) => m.dataset.pose === "fall")) {
+      window.__errors.push("gemini choco A: no party member fell");
+    }
+    await wait(2100);
+    if (document.querySelector(".yume-choco, .yume-choco-sky")) {
+      window.__errors.push("gemini choco A: sprite left behind after the run");
+    }
+
+    // Variant B clips inside the pill itself — that is where the paint lives.
+    chrome.storage.local.set({ yumeChocoNow: { v: "b", dur: 600 } });
+    await wait(300);
+    const clip = document.querySelector(".yume-choco-clip");
+    if (!clip || !clip.parentElement.classList.contains("input-area-container")) {
+      window.__errors.push("gemini choco B: clip wrapper not mounted on the composer pill");
+    }
+    await wait(800);
+
+    // The banner hunter stands down on gemini: the decoy keeps its style.
+    const decoy = document.getElementById("gem-decoy");
+    if (decoy.getAttribute("style") !== "width:600px;height:24px") {
+      window.__errors.push("gemini: banner hunter styled the decoy -> " + decoy.getAttribute("style"));
+    }
+
+    // Anthropicons adoption is claude-only; the glyph must NOT be marked here.
+    const fakeMenu = document.createElement("div");
+    fakeMenu.setAttribute("role", "menu");
+    fakeMenu.innerHTML = "<button role=menuitem><span></span><span>Routines</span></button>";
+    document.body.append(fakeMenu);
+    await wait(250);
+    if (fakeMenu.querySelector("span").dataset.yumeIcon) {
+      window.__errors.push("gemini: PUA glyph was marked on gemini (claude-only mechanism)");
+    }
+    fakeMenu.remove();
+
+    // Theme off and back on through the gemini slot; other slots mean nothing.
+    chrome.storage.sync.set({ cctThemeGemini: "" });
+    await wait(400);
+    if (root.getAttribute("data-cct-theme")) {
+      window.__errors.push("gemini: clearing cctThemeGemini did not clear the attribute");
+    }
+    if (document.querySelector(".yume-party")) {
+      window.__errors.push("gemini: party left behind after the theme was cleared");
+    }
+    chrome.storage.sync.set({ cctThemeGemini: "final-fantasy-gemini" });
+    await wait(500);
+    if (root.getAttribute("data-cct-theme") !== "final-fantasy-gemini") {
+      window.__errors.push("gemini: switching back did not restore the attribute");
+    }
+    chrome.storage.sync.set({ cctTheme: "dracula", cctThemeGpt: "final-fantasy-gpt" });
+    await wait(300);
+    if (root.getAttribute("data-cct-theme") !== "final-fantasy-gemini") {
+      window.__errors.push("gemini: a claude/gpt-slot write changed the gemini tab's theme");
+    }
+
+    if (window.__audioCtxCount !== 0) {
+      window.__errors.push("gemini: AudioContext constructed without user activation (" +
+        window.__audioCtxCount + "x)");
+    }
+    return window.__errors;
+  };
+  window.__drive().then((errs) => {
+    document.title = "SMOKE:" + (errs.length ? errs.join(" | ") : "clean");
+  });
+</script>
+</body>
+</html>`;
+
 let failed = 0;
 
 async function drivePage(label, html, budget) {
@@ -575,4 +791,5 @@ async function drivePage(label, html, budget) {
 
 await drivePage("smoke (claude)", PAGE, 22000);
 await drivePage("smoke (chatgpt)", GPT_PAGE, 24000);
+await drivePage("smoke (gemini)", GEMINI_PAGE, 24000);
 process.exit(failed ? 1 : 0);

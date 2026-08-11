@@ -152,6 +152,21 @@ document.getElementById("f").addEventListener("load", async () => {
       out.gptSelect = sel;
     }
 
+    // The Gemini tab mirrors the OpenAI one with its own slot.
+    tabFor("gemini").click();
+    await new Promise((r) => setTimeout(r, 150));
+    out.geminiCards = names();
+    out.geminiResetLabel = (d.getElementById("reset-label") || {}).textContent || "";
+    const gemCard = [...d.querySelectorAll(".theme-card")]
+      .find((c) => /Final Fantasy/.test((c.querySelector(".theme-name") || {}).textContent || ""));
+    if (gemCard) {
+      gemCard.querySelector(".theme-pick").click();
+      await new Promise((r) => setTimeout(r, 150));
+      const sel = await new Promise((res) =>
+        w.chrome.storage.sync.get(["cctTheme", "cctThemeGpt", "cctThemeGemini"], res));
+      out.geminiSelect = sel;
+    }
+
     // Cross-site import: a packaged ChatGPT theme must file itself under
     // OpenAI and select into the ChatGPT slot even when imported elsewhere.
     if (GPT_JSON) {
@@ -280,6 +295,22 @@ if (m) {
     r.gptSelect && /^custom-/.test(r.gptSelect.cctTheme || "")
       ? ok("…and leaves the claude slot untouched")
       : fail("claude slot after OpenAI select: " + JSON.stringify((r.gptSelect || {}).cctTheme));
+
+    JSON.stringify(r.geminiCards) === JSON.stringify(["💎 Final Fantasy"])
+      ? ok("Gemini tab lists exactly the bundled Gemini theme")
+      : fail("Gemini tab lists " + JSON.stringify(r.geminiCards));
+
+    /Gemini Default/.test(r.geminiResetLabel)
+      ? ok(`Gemini reset row reads "${r.geminiResetLabel.trim()}"`)
+      : fail(`Gemini reset row reads "${r.geminiResetLabel.trim()}"`);
+
+    r.geminiSelect && r.geminiSelect.cctThemeGemini === "final-fantasy-gemini"
+      ? ok("selecting on the Gemini tab writes cctThemeGemini")
+      : fail("after Gemini select, sync holds " + JSON.stringify(r.geminiSelect));
+
+    r.geminiSelect && r.geminiSelect.cctThemeGpt === "final-fantasy-gpt"
+      ? ok("…and leaves the ChatGPT slot untouched")
+      : fail("gpt slot after Gemini select: " + JSON.stringify((r.geminiSelect || {}).cctThemeGpt));
 
     if (r.importLandedOn !== undefined) {
       r.importLandedOn === "chatgpt"

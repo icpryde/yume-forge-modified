@@ -21,21 +21,23 @@
   // the sound pipeline, party mechanics and scheduling are site-agnostic.
   // The harness override exists because a file:// fixture cannot fake its
   // hostname — smoke sets it before loading this script to drive the
-  // chatgpt-shaped fixture down the chatgpt paths.
+  // chatgpt- and gemini-shaped fixtures down their site paths.
   const SITE = globalThis.__YUME_TEST_SITE ||
-    (/(^|\.)chatgpt\.com$/.test(location.hostname) ? "chatgpt" : "claude");
+    (/(^|\.)chatgpt\.com$/.test(location.hostname) ? "chatgpt" :
+     /(^|\.)gemini\.google\.com$/.test(location.hostname) ? "gemini" : "claude");
 
   // Each site has its own selected-theme slot; see theme-engine.
   const SEL_KEY = E.selectedKeyFor(SITE);
 
   // Kept in step with lib/packer.js FEATURES — that is what an exported copy
   // carries, this is what the bundled original uses.
-  // No "banner" for the ChatGPT theme: the banner hunt is a claude.ai-Home
-  // notion (usage notices dropped into the composer strip); chatgpt.com has
-  // no equivalent band to police.
+  // No "banner" for the ChatGPT and Gemini themes: the banner hunt is a
+  // claude.ai-Home notion (usage notices dropped into the composer strip);
+  // neither of the other sites has an equivalent band to police.
   const BUNDLED_FEATURES = {
     "final-fantasy": ["party", "stars", "banner", "composer-glow", "replies"],
     "final-fantasy-gpt": ["party", "stars", "composer-glow", "replies"],
+    "final-fantasy-gemini": ["party", "stars", "composer-glow", "replies"],
   };
   const PREVIEW_KEY = "yumePreview";
 
@@ -733,6 +735,16 @@
   const isFinalFantasy = () => alive() && hasFeature("party");
 
   const composer = () => {
+    if (SITE === "gemini") {
+      // The visual pill every Gemini surface shares (Chat and Spark alike) is
+      // .input-area-container — a <fieldset> inside <input-container> wrapping
+      // input-area-v2. The party stands on it and the chocobo stages off it.
+      // Fallback: the input-area div inside input-area-v2 for builds that
+      // drop the fieldset.
+      return document.querySelector("input-container .input-area-container") ||
+        document.querySelector("input-area-v2 .input-area") ||
+        null;
+    }
     if (SITE === "chatgpt") {
       // The unified composer <form> wraps the visual box ([data-composer-
       // surface]) and nothing else of consequence, and it survives the
@@ -806,10 +818,11 @@
     // sticky strip around that composer. On the code tab the element its
     // geometry likes best is the repo/branch chip row above the prompt —
     // which promptly got dressed as a menu window. No epitaxy surface needs
-    // this treatment; clear and stand down. chatgpt.com has no banner band
-    // at all (and its "banner" feature is never granted), so it stands down
-    // the same way rather than dressing whatever sits above the composer.
-    if (SITE === "chatgpt") { clearBannerPadding(); return; }
+    // this treatment; clear and stand down. chatgpt.com and gemini have no
+    // banner band at all (and their "banner" feature is never granted), so
+    // they stand down the same way rather than dressing whatever sits above
+    // the composer.
+    if (SITE !== "claude") { clearBannerPadding(); return; }
     if (host.classList.contains("epitaxy-prompt")) { clearBannerPadding(); return; }
     // Every bail-out path clears first. Returning early used to leave the cap
     // and frame frozen on whatever was styled — so shrinking the window below
@@ -982,6 +995,24 @@
    * [data-find-omitted] subtrees makes the stamp fire exactly when the real
    * reply begins: one clean moogle -> crystal handoff.
    */
+  /**
+   * Gemini variant of hasReplyText: the marker that must not count is the
+   * thoughts subtree rather than claude's [data-find-omitted].
+   */
+  function hasGeminiReplyText(body) {
+    const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+    for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+      if (!t.nodeValue.trim()) continue;
+      const el = t.parentElement;
+      // thinking-overlay is the settled build's leftover shell; the class
+      // has-thoughts is deliberately NOT here — it sits on the wrapper that
+      // holds the real answer too, and excluding it would blind this walk.
+      if (el && el.closest("model-thoughts, .thoughts-container, thinking-overlay, .thinking-banner")) continue;
+      return true;
+    }
+    return false;
+  }
+
   function hasReplyText(body) {
     const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
     for (let t = walker.nextNode(); t; t = walker.nextNode()) {
@@ -994,6 +1025,71 @@
   }
 
   function markReplyWindows() {
+    if (SITE === "gemini") {
+      // Gemini's turns are .conversation-container (a user-query + a
+      // model-response per turn); the reply body is message-content's
+      // .markdown. While the model is only thinking, the markdown holds no
+      // text yet (the streamed reasoning lives in .thoughts-container /
+      // model-thoughts, which also carries "Show thinking" chrome) — so
+      // thoughts subtrees are excluded from the text walk and the frame
+      // lands exactly when the first real answer token does.
+      const replies = document.querySelectorAll("model-response");
+      for (const el of replies) {
+        const body = el.querySelector("message-content .markdown") ||
+          el.querySelector(".markdown");
+        const filled = !!body &&
+          !body.closest("model-thoughts, .thoughts-container, thinking-overlay") &&
+          hasGeminiReplyText(body);
+        if (filled) {
+          if (!el.dataset[REPLY_ATTR]) el.dataset[REPLY_ATTR] = "1";
+        } else if (el.dataset[REPLY_ATTR]) {
+          delete el.dataset[REPLY_ATTR];
+        }
+      }
+
+      // "Working" = the newest model-response while the run is in flight.
+      // Union of signals, same shape as the chatgpt detector: the stop
+      // affordance replaces the send arrow for the whole run, the
+      // generation-time loaders (skeleton/shimmer/thinking banner — probed
+      // off the live build's stylesheets; none exist at rest) cover the
+      // silent reasoning stretch, and the actions row under the reply
+      // mounts at completion. The spinner check stays SCOPED to the last
+      // reply: a hidden mat-progress-spinner idles inside the history
+      // scroller at rest (pagination), so a document-wide spinner test
+      // would read as busy forever. Hysteresis below smooths hand-offs.
+      const last = replies[replies.length - 1] || null;
+      const busy = !!(
+        document.querySelector('button[aria-label*="stop" i], .stop-icon, [class*="stop-generating"]') ||
+        document.querySelector(".thinking-banner, .skeleton-loader-container, .gem-shimmer-active") ||
+        (last && (
+          !last.querySelector("message-actions") ||
+          last.querySelector('[class*="streaming"], [class*="generating"], [class*="pending"], .loading-indicator, blinking-cursor') ||
+          last.querySelector("mat-progress-spinner, mat-spinner")
+        ))
+      );
+
+      const now = performance.now();
+      if (busy) {
+        gptWorkHold = now + 1500;
+        if (gptWorkTimer) { clearTimeout(gptWorkTimer); gptWorkTimer = null; }
+      }
+      const active = busy || now < gptWorkHold;
+      const working = active ? last : null;
+      if (!busy && active && !gptWorkTimer) {
+        gptWorkTimer = setTimeout(() => {
+          gptWorkTimer = null;
+          markReplyWindows();
+          markLatestReply();
+        }, gptWorkHold - now + 80);
+      }
+      for (const el of document.querySelectorAll("[data-yume-working]")) {
+        if (el !== working) el.removeAttribute("data-yume-working");
+      }
+      if (working && !working.hasAttribute("data-yume-working")) {
+        working.setAttribute("data-yume-working", "");
+      }
+      return;
+    }
     if (SITE === "chatgpt") {
       // chatgpt's turns are far more declarative than claude's: every turn is
       // a section[data-turn], and the assistant body is .markdown. While the
@@ -1094,8 +1190,9 @@
     // wrappers put the tag on the empty next-turn placeholder, which is mounted
     // most of the time — so the breathe glow was landing on an element with no
     // frame and the real newest reply never glowed.
-    const replies = document.querySelectorAll(SITE === "chatgpt"
-      ? 'section[data-turn="assistant"][data-yume-reply]'
+    const replies = document.querySelectorAll(
+      SITE === "gemini" ? "model-response[data-yume-reply]"
+      : SITE === "chatgpt" ? 'section[data-turn="assistant"][data-yume-reply]'
       : "div[data-is-streaming][data-yume-reply]");
     const last = replies[replies.length - 1] || null;
     for (const el of document.querySelectorAll("[" + LATEST_ATTR + "]")) {

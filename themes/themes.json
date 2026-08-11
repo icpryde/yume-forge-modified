@@ -326,6 +326,37 @@
         }
       ],
       "site": "chatgpt"
+    },
+    {
+      "id": "final-fantasy-gemini",
+      "category": "retro",
+      "name": "Final Fantasy",
+      "emoji": "💎",
+      "mode": "Dark · party + crystal",
+      "bg": "#0b1240",
+      "text": "#dbe4ff",
+      "accent": "#ffd75e",
+      "options": [
+        {
+          "id": "rich-text",
+          "label": "Colourful text",
+          "hint": "Bold, italics, headings, links and code picked out in menu colours",
+          "default": false
+        },
+        {
+          "id": "menu-sounds",
+          "label": "Menu sounds",
+          "hint": "The classic cursor blip when you hover a menu item, and a chime when you select",
+          "default": true
+        },
+        {
+          "id": "bottom-scenery",
+          "label": "Horizon scenery",
+          "hint": "A silhouetted scene along the bottom, behind everything",
+          "default": true
+        }
+      ],
+      "site": "gemini"
     }
   ]
 }

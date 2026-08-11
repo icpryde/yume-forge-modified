@@ -1,0 +1,1241 @@
+/* ============================================================================
+   Yume Forge — "final-fantasy-gemini"
+
+   The Final Fantasy theme, ported to gemini.google.com. Same love letter —
+   royal blue menu windows, hard white frames, gold cursor, the crystal beside
+   every reply, the party idling on the composer — reseated on Gemini's DOM.
+
+   Written against the live signed-in Pro build (2026-08-11): the app is
+   Angular + Material, so surfaces hang off --gem-sys-color--* / --bard-color-*
+   custom properties (finished colours, not triplets), turns are
+   .conversation-container holding <user-query> (bubble:
+   .user-query-bubble-with-background) and <model-response> (body:
+   message-content .markdown; actions: <message-actions>; reasoning:
+   model-thoughts / .thoughts-container). The composer is <input-container> >
+   fieldset.input-area-container > <input-area-v2> around a Quill
+   <rich-textarea> (.ql-editor). Sidebar rows are <gem-nav-list-item> keyed by
+   their link hrefs; icons everywhere are <mat-icon> font ligatures
+   (lumi-symbols / Google Symbols), so icon swaps hide the glyph text and draw
+   a sprite on the slot. Busy is stamped by content.js as data-yume-working on
+   the newest model-response (stop affordance + pending markers, with
+   hysteresis), the same contract as the ChatGPT theme.
+
+   Covers both the Chat surface and the Spark tab: Spark reuses the same
+   chat-window / input-area-v2 / conversation-container machinery, so every
+   rule below that keys on those elements applies there unchanged.
+
+   This file is SELF-CONTAINED on purpose: _base.css is claude-only, so the
+   ambience scaffolding (html::before/::after, the starfield pseudos, the fall
+   keyframes) is declared here. Shares the generated sprite sheets and fonts
+   with the other themes via the same manifest css list.
+   ========================================================================== */
+
+html[data-cct-theme="final-fantasy-gemini"] {
+  /* --- window frame ------------------------------------------------------ */
+  --ff-win-top: #2f47a8;
+  --ff-win-mid: #16225e;
+  --ff-win-bot: #0b1240;
+  --ff-frame: #ffffff;
+  --ff-bevel: rgba(148, 176, 244, 0.55);
+  --ff-drop: rgba(3, 6, 22, 0.72);
+
+  --ff-gold: #ffd75e;
+  --ff-crystal-cyan: #8beaff;
+
+  --ff-window: linear-gradient(180deg, var(--ff-win-top) 0%, var(--ff-win-mid) 58%, var(--ff-win-bot) 100%);
+  --ff-window-user: linear-gradient(180deg, #3a55c4 0%, #1e2e78 58%, #12194f 100%);
+  --ff-window-reply: linear-gradient(180deg, #1a2568 0%, #0e1442 60%, #070b2a 100%);
+  --ff-frame-shadow:
+    inset 0 0 0 1px var(--ff-bevel),
+    0 3px 0 var(--ff-drop),
+    0 8px 22px rgba(0, 0, 0, 0.45);
+
+  /* --- type -------------------------------------------------------------- */
+  --ff-pixel: "Yume Press Start", ui-monospace, monospace;
+  --ff-pixel-ui: "Yume Silkscreen", "Yume Press Start", ui-monospace, monospace;
+  --ff-body: var(--ff-pixel);
+  --ff-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ---------------------------------------------------------------- tokens */
+
+/* Gemini paints nearly everything through Material/system design tokens
+   holding finished colours. The page-wide surfaces go TRANSPARENT so the
+   body's sky gradient (below) shows through everywhere; anything that
+   genuinely needs its own panel (menus, dialogs, bubbles, composer) is
+   explicitly dressed as a menu window further down. */
+html[data-cct-theme="final-fantasy-gemini"],
+html[data-cct-theme="final-fantasy-gemini"] body,
+html[data-cct-theme="final-fantasy-gemini"] body * {
+  /* System surface ramp: main canvases transparent, elevated panels navy. */
+  --gem-sys-color--surface: transparent !important;
+  --gem-sys-color--surface-dim: transparent !important;
+  --gem-sys-color--surface-bright: #1d2a75 !important;
+  --gem-sys-color--surface-container-lowest: rgba(7, 11, 42, 0.6) !important;
+  --gem-sys-color--surface-container-low: #131c58 !important;
+  --gem-sys-color--surface-container: #16205e !important;
+  --gem-sys-color--surface-container-high: #1a2568 !important;
+  --gem-sys-color--surface-container-highest: #1d2a75 !important;
+  --gem-sys-color--surface-variant: #1d2a75 !important;
+
+  --gem-sys-color--on-surface: #ffffff !important;
+  --gem-sys-color--on-surface-variant: #dbe4ff !important;
+  --gem-sys-color--on-surface-low: #a9b7e8 !important;
+
+  --gem-sys-color--outline: rgba(255, 255, 255, 0.55) !important;
+  --gem-sys-color--outline-variant: rgba(255, 255, 255, 0.3) !important;
+  --gem-sys-color--outline-low: rgba(255, 255, 255, 0.26) !important;
+
+  --gem-sys-color--primary: var(--ff-gold) !important;
+  --gem-sys-color--on-primary: #241c04 !important;
+  --gem-sys-color--primary-container: #1f2f78 !important;
+  --gem-sys-color--on-primary-container: #dbe4ff !important;
+  --gem-sys-color--secondary: #8beaff !important;
+  --gem-sys-color--secondary-container: #14406e !important;
+  --gem-sys-color--on-secondary-container: #c2e7ff !important;
+
+  /* Legacy bard tokens the sidenav and composer still read. */
+  --bard-color-sidenav-background-desktop: transparent !important;
+  --bard-color-sidenav-background-mobile: #10184c !important;
+  --bard-color-sidenav-scrim: rgba(4, 8, 30, 0.6) !important;
+  --bard-color-main-container-background: transparent !important;
+  --bard-color-chat-container-background: transparent !important;
+  --bard-color-response-container-background: transparent !important;
+  --bard-color-response-container-flipped-background: #16205e !important;
+  --bard-color-input-area-background: transparent !important;
+  --bard-color-input-companion-button-hover-background: rgba(255, 215, 94, 0.16) !important;
+  --bard-color-input-companion-button-active-background: rgba(255, 215, 94, 0.22) !important;
+  --bard-color-input-area-buttons-hover-background: rgba(255, 215, 94, 0.16) !important;
+  --bard-color-surface-tint: #8beaff !important;
+  --bard-color-on-surface: #ffffff !important;
+  --bard-color-on-surface-variant: #dbe4ff !important;
+
+  /* Material component panels (menus, dialogs, selects, tooltips, cards). */
+  --mat-menu-container-color: #131c58 !important;
+  --mat-menu-item-label-text-color: #ffffff !important;
+  --mat-menu-item-icon-color: #dbe4ff !important;
+  --mat-dialog-container-color: #131c58 !important;
+  --mat-select-panel-background-color: #131c58 !important;
+  --mat-option-label-text-color: #ffffff !important;
+  --mat-app-background-color: transparent !important;
+  --mat-app-text-color: #ffffff !important;
+  --mat-card-container-color: #131c58 !important;
+  --mat-tooltip-container-color: #10184c !important;
+  --mat-tooltip-supporting-text-color: #ffffff !important;
+  --mat-sidenav-container-background-color: transparent !important;
+  --mat-sidenav-content-background-color: transparent !important;
+  --mat-sidenav-container-text-color: #ffffff !important;
+  --mat-expansion-container-background-color: transparent !important;
+  --mat-expansion-container-text-color: #ffffff !important;
+  --mat-bottom-sheet-container-background-color: #131c58 !important;
+
+  /* Text tokens Gemini components read directly. */
+  --mat-slide-toggle-selected-track-color: var(--ff-gold) !important;
+  --mat-icon-color: #dbe4ff !important;
+}
+
+/* -------------------------------------------------------------- ambience */
+
+/* The sky. body carries the page gradient plus (optionally) the horizon
+   silhouette; the page's own wrappers were made transparent above, so this is
+   what shows behind every surface. Fixed attachment: the thread scroller is
+   thousands of px tall and a scrolling gradient would stretch to nothing. */
+html[data-cct-theme="final-fantasy-gemini"] {
+  --ff-horizon: none;
+}
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="bottom-scenery"] {
+  --ff-horizon: var(--yume-ff-silhouette);
+}
+
+html[data-cct-theme="final-fantasy-gemini"] body {
+  background-image: var(--ff-horizon), linear-gradient(180deg,
+    hsl(226 62% 26%) 0%,
+    hsl(230 64% 18%) 26%,
+    hsl(233 66% 12%) 58%,
+    hsl(234 66% 9%) 100%) !important;
+  background-attachment: fixed, fixed !important;
+  background-repeat: no-repeat, no-repeat !important;
+  /* Art composed with its subjects at the right, so they never leave the
+     screen; a wider window reveals more of the scene's left. Natural size. */
+  background-position: right bottom, center !important;
+  background-size:
+    calc(var(--yume-ff-silhouette-w) * 1px) calc(var(--yume-ff-silhouette-h) * 1px),
+    100% 100% !important;
+  background-color: #0b1240 !important;
+}
+
+/* The app's own full-height wrappers go glass so the sky shows through. */
+html[data-cct-theme="final-fantasy-gemini"] chat-app,
+html[data-cct-theme="final-fantasy-gemini"] main.chat-app,
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav-container,
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav-content,
+html[data-cct-theme="final-fantasy-gemini"] chat-window,
+html[data-cct-theme="final-fantasy-gemini"] chat-window-content,
+html[data-cct-theme="final-fantasy-gemini"] #chat-history,
+html[data-cct-theme="final-fantasy-gemini"] input-container {
+  background: transparent !important;
+}
+
+/* Moon + corner washes, floating above the page (same layer budget as the
+   claude theme: html::before is scenery, html::after is the falling motes,
+   body::before/::after are the two starfields). All are pointer-events-none
+   fixed layers, self-declared since _base.css does not load here. */
+html[data-cct-theme="final-fantasy-gemini"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483645;
+  background-image:
+    var(--yume-ff-moon),
+    radial-gradient(1100px 700px at 50% -14%, rgba(72, 116, 255, 0.16), transparent 72%),
+    radial-gradient(900px 620px at -8% 108%, rgba(30, 58, 176, 0.12), transparent 74%);
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position:
+    right clamp(10px, 3.4vw, 78px) top clamp(8px, 2.2vh, 34px),
+    center, center;
+  background-size: clamp(118px, 14vw, 208px), auto, auto;
+}
+
+@media (max-width: 560px) {
+  html[data-cct-theme="final-fantasy-gemini"]::before { background-image: none, none, none; }
+}
+
+@keyframes cct-fall { from { transform: translateY(0); } to { transform: translateY(460px); } }
+
+/* Crystal motes drifting down. */
+html[data-cct-theme="final-fantasy-gemini"]::after {
+  content: "";
+  position: fixed;
+  left: 0; right: 0; top: -460px; bottom: 0;
+  pointer-events: none;
+  z-index: 2147483646;
+  will-change: transform;
+  opacity: 0.75;
+  background-repeat: repeat;
+  background-image: var(--yume-ff-motes);
+  animation: cct-fall 34s linear infinite;
+}
+
+@keyframes ff-twinkle {
+  0%, 100% { opacity: 0.18; }
+  38%      { opacity: 1; }
+  64%      { opacity: 0.32; }
+}
+
+html[data-cct-theme="final-fantasy-gemini"] body::before,
+html[data-cct-theme="final-fantasy-gemini"] body::after {
+  content: "";
+  position: fixed;
+  left: 0; right: 0; top: -460px; bottom: 0;
+  pointer-events: none;
+  z-index: 2147483644;
+  will-change: transform;
+  background-repeat: repeat;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] body::before {
+  background-image: var(--yume-ff-stars-far);
+  opacity: 0.62;
+  animation: cct-fall 72s linear infinite;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] body::after {
+  background-image: var(--yume-ff-stars-near);
+  animation:
+    cct-fall 46s linear infinite,
+    ff-twinkle 4.6s ease-in-out infinite;
+}
+
+/* Shooting stars — spawned by content.js, geometry per-star. */
+html[data-cct-theme="final-fantasy-gemini"] .yume-shooting-star {
+  position: fixed;
+  z-index: 2147483643;
+  width: var(--len, 140px);
+  height: 2px;
+  border-radius: 2px;
+  transform-origin: 0 50%;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    rgba(180, 214, 255, 0) 0%,
+    rgba(190, 224, 255, 0.55) 55%,
+    rgba(236, 248, 255, 0.95) 88%,
+    #ffffff 100%);
+  filter: drop-shadow(0 0 6px rgba(150, 210, 255, 0.85));
+  animation: yume-shoot var(--dur, 1.4s) cubic-bezier(0.25, 0.5, 0.5, 1) forwards;
+}
+
+@keyframes yume-shoot {
+  0%   { transform: rotate(var(--ang, 30deg)) translateX(0); opacity: 0; }
+  12%  { opacity: 1; }
+  72%  { opacity: 1; }
+  100% { transform: rotate(var(--ang, 30deg)) translateX(var(--travel, 100vw)); opacity: 0; }
+}
+
+/* ------------------------------------------------------------------ type */
+
+/* Gemini sets families high up and sizes per element, so one body-level
+   override carries the UI face everywhere; prose and code re-declare below.
+   mat-icon is exempted right after — its "text" is a ligature glyph, and a
+   pixel font on it would literally spell the icon's name. */
+html[data-cct-theme="final-fantasy-gemini"] body,
+html[data-cct-theme="final-fantasy-gemini"] button,
+html[data-cct-theme="final-fantasy-gemini"] input,
+html[data-cct-theme="final-fantasy-gemini"] select,
+html[data-cct-theme="final-fantasy-gemini"] textarea,
+html[data-cct-theme="final-fantasy-gemini"] kbd {
+  font-family: var(--ff-pixel-ui) !important;
+  letter-spacing: 0.01em;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] .lumi-symbols,
+html[data-cct-theme="final-fantasy-gemini"] .google-symbols,
+html[data-cct-theme="final-fantasy-gemini"] .material-symbols-outlined {
+  font-family: "Luminous Symbols", "lumi-symbols", "Google Symbols", "Material Symbols Outlined", "Material Symbols Rounded" !important;
+  letter-spacing: normal;
+}
+
+/* Message and composer text — Press Start 2P (real lowercase; Silkscreen's
+   lowercase is bitmap-identical to caps and reads as SHOUTING).
+
+   0.75rem = 12px, and both the unit and the number are load-bearing: REM
+   because the list includes `*` and an em would compound per nesting level;
+   12px because Press Start 2P sits on an 8px grid and is only crisp at whole
+   device pixels per glyph pixel (on 2x: 12px = exactly 3). Adjust only in
+   whole 4px steps. Colour stated EXPLICITLY — never inherited from the site's
+   tokens (the friend-build lesson from claude.ai). */
+html[data-cct-theme="final-fantasy-gemini"] .markdown,
+html[data-cct-theme="final-fantasy-gemini"] .markdown :not(mat-icon):not(code):not(pre):not(pre *),
+html[data-cct-theme="final-fantasy-gemini"] user-query .query-text,
+html[data-cct-theme="final-fantasy-gemini"] user-query .query-text *,
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor,
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor :not(mat-icon) {
+  font-family: var(--ff-body) !important;
+  font-size: 0.75rem !important;
+  line-height: 1.9 !important;
+  letter-spacing: normal;
+  color: #fff !important;
+}
+
+/* Code keeps a real monospace, inside prose and composer alike. */
+html[data-cct-theme="final-fantasy-gemini"] code,
+html[data-cct-theme="final-fantasy-gemini"] pre,
+html[data-cct-theme="final-fantasy-gemini"] pre *,
+html[data-cct-theme="final-fantasy-gemini"] code-block,
+html[data-cct-theme="final-fantasy-gemini"] code-block .code-container * {
+  font-family: var(--ff-mono) !important;
+}
+
+/* Markdown headings inside replies: pixel with the classic hard shadow. */
+html[data-cct-theme="final-fantasy-gemini"] .markdown h1,
+html[data-cct-theme="final-fantasy-gemini"] .markdown h2,
+html[data-cct-theme="final-fantasy-gemini"] .markdown h3,
+html[data-cct-theme="final-fantasy-gemini"] .markdown h4 {
+  font-family: var(--ff-pixel) !important;
+  font-size: 0.875rem !important;   /* 14px — one step above body, still on grid at 2x */
+  line-height: 1.8 !important;
+  text-shadow: 2px 2px 0 rgba(3, 6, 22, 0.85);
+  letter-spacing: 0.02em;
+}
+
+/* The zero-state greeting ("Your move, <name>!"): .zero-state-container >
+   modular-zero-state > h1.gds-display-m > span.message-text on the live
+   build, solid text (no gradient there to preserve). Pixel face, gold, the
+   classic hard shadow. Scoped to the h1 so any suggestion chips below keep
+   the UI face. clamp: Press Start is fixed-width and the line length varies
+   with the wording and the user's name. */
+html[data-cct-theme="final-fantasy-gemini"] modular-zero-state h1,
+html[data-cct-theme="final-fantasy-gemini"] modular-zero-state h1 *,
+html[data-cct-theme="final-fantasy-gemini"] .zero-state-container h1,
+html[data-cct-theme="final-fantasy-gemini"] .zero-state-container h1 * {
+  font-family: var(--ff-pixel) !important;
+  font-size: clamp(0.95rem, 2.2vw, 1.35rem) !important;
+  line-height: 1.7 !important;
+  letter-spacing: 0.02em;
+  color: var(--ff-gold) !important;
+  -webkit-text-fill-color: var(--ff-gold) !important;
+  background: none !important;
+  text-shadow: 2px 2px 0 rgba(3, 6, 22, 0.85);
+}
+
+/* The composer placeholder ("Ask Gemini"). Quill draws it as a ::before on
+   the empty editor. */
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor.ql-blank::before {
+  color: #a9b7e8 !important;
+  opacity: 1;
+  font-family: var(--ff-body) !important;
+  font-size: 0.75rem !important;
+}
+
+/* The tiny print under the composer ("Gemini is AI and can make mistakes"). */
+html[data-cct-theme="final-fantasy-gemini"] hallucination-disclaimer,
+html[data-cct-theme="final-fantasy-gemini"] hallucination-disclaimer * {
+  font-family: var(--ff-pixel-ui) !important;
+  color: #8fa0d8 !important;
+}
+
+/* ---------------------------------------------------------- menu windows */
+
+/* Your messages: the brighter blue window. */
+html[data-cct-theme="final-fantasy-gemini"] user-query .user-query-bubble-with-background,
+html[data-cct-theme="final-fantasy-gemini"] .user-query-bubble-with-background {
+  background: var(--ff-window-user) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 7px !important;
+  box-shadow: var(--ff-frame-shadow) !important;
+  color: #fff !important;
+}
+
+/* Menus, dialogs, selects and every other overlay panel. Two families:
+   Material's cdk-overlay panels (dialogs, tooltips, some menus) and Gemini's
+   own inline gem-menu popovers (the mode picker, at-mentions) rendered as
+   div.popover-menu right beside their trigger. */
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mat-mdc-menu-panel,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mat-mdc-select-panel,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mat-mdc-autocomplete-panel,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mat-mdc-dialog-surface,
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-container .mat-bottom-sheet-container,
+html[data-cct-theme="final-fantasy-gemini"] .popover-menu,
+html[data-cct-theme="final-fantasy-gemini"] gem-menu[role="menu"] {
+  background: var(--ff-window) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 7px !important;
+  box-shadow: var(--ff-frame-shadow) !important;
+  color: #fff !important;
+}
+/* A gem-menu inside a popover-menu: one window, not a frame in a frame. */
+html[data-cct-theme="final-fantasy-gemini"] .popover-menu gem-menu[role="menu"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-menu-item:hover,
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-option:hover,
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-menu-item.mat-mdc-menu-item-highlighted,
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-option.mat-mdc-option-active,
+html[data-cct-theme="final-fantasy-gemini"] gem-menu-item:hover,
+html[data-cct-theme="final-fantasy-gemini"] gem-menu-item.active {
+  background: rgba(255, 215, 94, 0.16) !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-menu-item:hover .mat-mdc-menu-item-text,
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-menu-item.mat-mdc-menu-item-highlighted .mat-mdc-menu-item-text,
+html[data-cct-theme="final-fantasy-gemini"] gem-menu-item:hover *,
+html[data-cct-theme="final-fantasy-gemini"] gem-menu-item.active * {
+  color: var(--ff-gold) !important;
+}
+/* The currently-selected mode wears gold outright, like a menu cursor row. */
+html[data-cct-theme="final-fantasy-gemini"] gem-menu-item.selected,
+html[data-cct-theme="final-fantasy-gemini"] gem-menu-item.selected * {
+  color: var(--ff-gold) !important;
+}
+
+/* Tooltips. .mdc-tooltip only — a classless [role="tooltip"] a11y describer
+   idles inside .cdk-visually-hidden and must not be dressed. */
+html[data-cct-theme="final-fantasy-gemini"] .mdc-tooltip__surface,
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-tooltip-surface,
+html[data-cct-theme="final-fantasy-gemini"] .mdc-tooltip.gem-tooltip,
+html[data-cct-theme="final-fantasy-gemini"] mat-tooltip-component .mdc-tooltip {
+  background: var(--ff-window) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 5px !important;
+  box-shadow: var(--ff-frame-shadow) !important;
+  font-family: var(--ff-pixel-ui) !important;
+  color: #fff !important;
+}
+
+/* The overlay scrim behind dialogs. */
+html[data-cct-theme="final-fantasy-gemini"] .cdk-overlay-dark-backdrop {
+  background: rgba(4, 8, 30, 0.6) !important;
+}
+
+/* ------------------------------------------------------- reply windows */
+
+/* content.js stamps data-yume-reply on <model-response> once the reply holds
+   real text (thoughts excluded), and data-yume-latest on the newest — same
+   contract as the other sites. The frame wraps the response content, not the
+   whole turn, so the action row below stays outside the window. */
+html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-reply] .response-container-content {
+  background: var(--ff-window-reply) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 7px !important;
+  box-shadow: var(--ff-frame-shadow);
+  padding: 10px 14px 10px 40px !important;
+  position: relative;
+}
+
+/* Crystal in the window's left gutter — the speaker mark. Width derives from
+   the ripped asset's own aspect so a re-rip never squashes it. */
+@keyframes ff-crystal-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(120, 220, 255, 0.55)) brightness(1);
+    transform: translateY(0);
+  }
+  50% {
+    filter: drop-shadow(0 0 11px rgba(150, 235, 255, 0.95)) brightness(1.15);
+    transform: translateY(-2px);
+  }
+}
+
+html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-reply] .response-container-content::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  height: 32px;
+  width: calc(32px * var(--yume-ff-crystal-w) / var(--yume-ff-crystal-h));
+  background: var(--yume-ff-crystal) center / contain no-repeat;
+  image-rendering: pixelated;
+  animation: ff-crystal-pulse 3.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-reply] .response-container-content { padding-left: 14px !important; }
+  html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-reply] .response-container-content::before { display: none; }
+}
+
+/* The newest reply breathes. */
+@keyframes ff-reply-breathe {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px var(--ff-bevel),
+      0 0 12px 1px rgba(92, 152, 255, 0.28),
+      0 3px 0 var(--ff-drop);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(196, 220, 255, 0.7),
+      0 0 26px 5px rgba(134, 202, 255, 0.5),
+      0 3px 0 var(--ff-drop);
+  }
+}
+
+html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-latest][data-yume-reply] .response-container-content {
+  animation: ff-reply-breathe 4.2s ease-in-out infinite;
+}
+
+/* Gemini's transient "Thinking…" banner, mounted below the newest turn
+   while the model reasons. A small menu window, indented past Mog's post so
+   he reads as its herald rather than its obstruction. */
+html[data-cct-theme="final-fantasy-gemini"] .thinking-banner {
+  display: inline-flex !important;
+  align-items: center;
+  margin-left: 40px !important;
+  margin-top: 4px;
+  padding: 4px 10px !important;
+  background: var(--ff-window) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 0 var(--ff-drop) !important;
+  font-family: var(--ff-pixel-ui) !important;
+  color: #fff !important;
+}
+
+/* The pre-text skeleton shimmer, re-tinted to the window palette. */
+html[data-cct-theme="final-fantasy-gemini"] .skeleton-loader-container,
+html[data-cct-theme="final-fantasy-gemini"] .skeleton-loader-container * {
+  background-color: rgba(47, 71, 168, 0.3) !important;
+}
+
+/* The thoughts drawer ("Show thinking") inside a reply: a quieter inset
+   panel, like a scroll tucked into the window. */
+html[data-cct-theme="final-fantasy-gemini"] model-thoughts:not(:empty),
+html[data-cct-theme="final-fantasy-gemini"] thinking-overlay:not(:empty),
+html[data-cct-theme="final-fantasy-gemini"] .thoughts-container {
+  background: rgba(4, 8, 30, 0.45) !important;
+  border: 1px solid rgba(150, 180, 255, 0.25) !important;
+  border-radius: 5px !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] .thoughts-content {
+  background: transparent !important;
+}
+
+/* Code blocks lift off the window fill instead of blurring into it. */
+html[data-cct-theme="final-fantasy-gemini"] .markdown pre,
+html[data-cct-theme="final-fantasy-gemini"] code-block,
+html[data-cct-theme="final-fantasy-gemini"] .code-block {
+  background: rgba(4, 8, 30, 0.55) !important;
+  border: 1px solid rgba(150, 180, 255, 0.22) !important;
+  border-radius: 5px !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] .markdown pre > div,
+html[data-cct-theme="final-fantasy-gemini"] code-block .code-container,
+html[data-cct-theme="final-fantasy-gemini"] .code-block-decoration {
+  background: transparent !important;
+}
+
+/* Markdown tables as menu grids. */
+html[data-cct-theme="final-fantasy-gemini"] .markdown table,
+html[data-cct-theme="final-fantasy-gemini"] .markdown th,
+html[data-cct-theme="final-fantasy-gemini"] .markdown td {
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] .markdown th {
+  background: rgba(47, 71, 168, 0.45) !important;
+}
+
+/* The response action row (thumbs, redo, copy, more) goes gold on hover. */
+html[data-cct-theme="final-fantasy-gemini"] message-actions button:hover mat-icon {
+  color: var(--ff-gold) !important;
+}
+
+/* ------------------------------------------------------ composer + glow */
+
+@keyframes ff-breathe {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px var(--ff-bevel),
+      0 0 13px 1px rgba(92, 152, 255, 0.34),
+      0 3px 0 var(--ff-drop);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(196, 220, 255, 0.8),
+      0 0 30px 6px rgba(134, 202, 255, 0.6),
+      0 3px 0 var(--ff-drop);
+  }
+}
+
+/* The composer pill is the menu window. Gemini rounds it heavily via its own
+   classes, hence !important. z-index: 0 grants a stacking context so the
+   chocobo's clipped runs can sit at z:-1 — above this window's own paint,
+   below the text being typed (the same trick the other two sites needed). */
+html[data-cct-theme="final-fantasy-gemini"] input-container .input-area-container,
+html[data-cct-theme="final-fantasy-gemini"] fieldset.input-area-container {
+  background: var(--ff-window) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 9px !important;
+  position: relative;
+  z-index: 0;
+  overflow: visible !important;
+  animation: ff-breathe 4.2s ease-in-out infinite;
+}
+
+/* Everything the pill wraps goes glass so the window gradient reads through.
+   The input-area-v2 HOST owns the stock pill (fill, 32px radius, its own
+   box-shadow) on the live build — flattened here so the fieldset window
+   above is the only box that paints. */
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 {
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .input-area,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .text-input-field,
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea,
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor {
+  background: transparent !important;
+}
+
+/* Composer control chips: plus/toolbox, mode pill, mic. Cosmetic only. */
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button,
+html[data-cct-theme="final-fantasy-gemini"] button[data-test-id="bard-mode-menu-button"] {
+  border: 1px solid rgba(255, 255, 255, 0.42) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, rgba(84, 114, 214, 0.45), rgba(18, 30, 92, 0.45)) !important;
+  color: #fff !important;
+  font-family: var(--ff-pixel-ui) !important;
+  box-shadow: 0 2px 0 rgba(3, 6, 22, 0.5);
+}
+
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button:hover,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button:hover,
+html[data-cct-theme="final-fantasy-gemini"] button[data-test-id="bard-mode-menu-button"]:hover {
+  border-color: var(--ff-gold) !important;
+  color: var(--ff-gold) !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .trailing-actions-wrapper button:hover mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] input-area-v2 .leading-actions-wrapper button:hover mat-icon {
+  color: var(--ff-gold) !important;
+}
+
+/* ---------------------------------------------------------- send button */
+
+/* The select hand, mirrored to point left into the text. The send button
+   only mounts once the composer has content; the mic keeps its own look. */
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] button,
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label="Send message"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  position: relative;
+  overflow: visible !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] button > *,
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label="Send message"] > * {
+  opacity: 0 !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] button::after,
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label="Send message"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  height: calc(var(--yume-ff-cursor-h) * 2px);
+  width: calc(var(--yume-ff-cursor-w) * 2px);
+  background: var(--yume-ff-cursor) center / contain no-repeat;
+  image-rendering: pixelated;
+  transform: scaleX(-1);
+  filter: drop-shadow(0 0 5px rgba(150, 200, 255, 0.55));
+}
+
+html[data-cct-theme="final-fantasy-gemini"] [data-test-id="send-button-container"] button:hover::after,
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label="Send message"]:hover::after {
+  filter: drop-shadow(0 0 9px rgba(255, 215, 94, 0.9));
+}
+
+/* Stop stays a real control — gold frame so it reads as the active verb.
+   It usually replaces the send arrow in the same slot mid-run. */
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label*="stop" i] {
+  background: linear-gradient(180deg, rgba(84, 114, 214, 0.55), rgba(18, 30, 92, 0.55)) !important;
+  border: 1px solid var(--ff-gold) !important;
+  border-radius: 3px !important;
+  color: var(--ff-gold) !important;
+  box-shadow: 0 2px 0 rgba(3, 6, 22, 0.5) !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label*="stop" i]::after {
+  content: none !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] button[aria-label*="stop" i] > * {
+  opacity: 1 !important;
+}
+
+/* ------------------------------------------------------------ the party */
+
+/* content.js injects .yume-party (four clickable members) onto the composer
+   pill; all sizing/pose maths derives from the generated strip metrics. */
+html[data-cct-theme="final-fantasy-gemini"] .yume-party {
+  position: absolute;
+  right: 16px;
+  top: calc(var(--yume-party-cell-h) * -2px);
+  display: flex;
+  gap: 6px;
+  z-index: 40;
+  pointer-events: none;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member {
+  width: calc(var(--yume-party-cell-w) * 2px);
+  height: calc(var(--yume-party-cell-h) * 2px);
+  background-repeat: no-repeat;
+  background-size: calc(var(--yume-party-poses) * 100%) 100%;
+  image-rendering: pixelated;
+  cursor: pointer;
+  pointer-events: auto;
+  filter: drop-shadow(0 2px 0 rgba(3, 6, 22, 0.5));
+  background-position-x: calc(var(--pose, 0) / (var(--yume-party-poses) - 1) * 100%);
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member[data-member="0"] { background-image: var(--yume-party-0); }
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member[data-member="1"] { background-image: var(--yume-party-1); }
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member[data-member="2"] { background-image: var(--yume-party-2); }
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member[data-member="3"] { background-image: var(--yume-party-3); }
+
+@keyframes ff-member-idle {
+  0%, 49.99% { background-position-x: 0%; }
+  50%, 100%  { background-position-x: calc(1 / (var(--yume-party-poses) - 1) * 100%); }
+}
+
+/* The party idles while Gemini is working. Driven by the same JS-stamped
+   data-yume-working the moogle rides — one "busy" definition for everything. */
+html[data-cct-theme="final-fantasy-gemini"]:has([data-yume-working]) .yume-party-member[data-pose="idle"] {
+  animation-name: ff-member-idle;
+  animation-duration: 0.92s;
+  animation-timing-function: steps(1);
+  animation-iteration-count: infinite;
+  animation-delay: var(--party-phase, 0s);
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member[data-member="1"] { --party-phase: 0.23s; }
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member[data-member="2"] { --party-phase: 0.46s; }
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member[data-member="3"] { --party-phase: 0.69s; }
+
+html[data-cct-theme="final-fantasy-gemini"] .yume-party-member:hover {
+  filter: drop-shadow(0 2px 0 rgba(3, 6, 22, 0.5)) brightness(1.18);
+}
+
+/* On the fresh-chat view the zero-state greeting sits directly above the
+   composer and can run through the leftmost members — those two kneel
+   (strip pose 4) until a conversation starts. modular-zero-state exists only
+   on the empty view; clicks and chocobo falls still override via data-pose. */
+html[data-cct-theme="final-fantasy-gemini"]:has(modular-zero-state) .yume-party-member[data-member="0"][data-pose="idle"],
+html[data-cct-theme="final-fantasy-gemini"]:has(modular-zero-state) .yume-party-member[data-member="1"][data-pose="idle"] {
+  animation: none !important;
+  background-position-x: calc(4 / (var(--yume-party-poses) - 1) * 100%);
+}
+
+@media (max-width: 720px) {
+  html[data-cct-theme="final-fantasy-gemini"] .yume-party { display: none; }
+}
+
+/* ---------------------------------------------------------- working Mog */
+
+/* Gemini's own "working" tell is the sparkle avatar spinning beside the
+   reply; Mog takes the post instead. content.js stamps data-yume-working on
+   the newest model-response for the whole run, and data-yume-latest survives
+   after it — Mog is a permanent resident under the newest reply, hopping
+   only while Gemini works, exactly like the ChatGPT port. */
+@keyframes ff-moogle-frames {
+  0%, 49.99% { background-position-x: 0%; }
+  50%, 100%  { background-position-x: 100%; }
+}
+
+@keyframes ff-moogle-hop {
+  0%, 100% { transform: translateY(0); }
+  42%      { transform: translateY(-3px); }
+}
+
+html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-latest] .response-container,
+html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-working] .response-container {
+  position: relative;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-latest] .response-container::after,
+html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-working] .response-container::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: calc(100% + 6px);
+  width: calc(var(--yume-ff-moogle-w) * 1.5px);
+  height: calc(var(--yume-ff-moogle-h) * 1.5px);
+  background-image: var(--yume-ff-moogle);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+  z-index: 2;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-working] .response-container::after {
+  animation:
+    ff-moogle-frames 0.62s steps(1) infinite,
+    ff-moogle-hop 0.62s ease-in-out infinite;
+}
+
+/* While a new turn is mid-run it owns the only Mog — the previous reply's
+   parked one stands down so he never doubles. */
+html[data-cct-theme="final-fantasy-gemini"]:has(model-response[data-yume-working]) model-response[data-yume-latest]:not([data-yume-working]) .response-container::after {
+  content: none;
+}
+
+/* ----------------------------------------------------------- the sidebar */
+
+/* The whole column is one tall menu panel: gradient sky-glass, white keyline
+   on the content edge, hard drop. Inner surfaces were made transparent by the
+   token block. */
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav {
+  background-image: linear-gradient(180deg,
+    hsl(228 60% 17%) 0%,
+    hsl(233 64% 11%) 100%) !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+  background-size: 100% 100% !important;
+  border-right: 2px solid var(--ff-frame) !important;
+  box-shadow:
+    2px 0 0 var(--ff-bevel),
+    4px 0 0 var(--ff-drop),
+    6px 0 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content .overflow-container {
+  background: transparent !important;
+}
+
+/* Sidebar rows: menu entries. Gold on hover, with the blinking select hand. */
+@keyframes ff-cursor-blink {
+  0%, 60%   { opacity: 1; }
+  61%, 100% { opacity: 0.35; }
+}
+
+html[data-cct-theme="final-fantasy-gemini"] gem-nav-list-item,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/app"],
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebook"] {
+  position: relative;
+  overflow: visible !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:not([href^="http"])::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  margin-top: calc(var(--yume-ff-cursor-h) * -0.5px);
+  height: calc(var(--yume-ff-cursor-h) * 1px);
+  width: calc(var(--yume-ff-cursor-w) * 1px);
+  background: var(--yume-ff-cursor) center / contain no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+  transition: opacity 90ms linear;
+  pointer-events: none;
+  z-index: 2;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:not([href^="http"]):hover::before {
+  opacity: 1;
+  animation: ff-cursor-blink 0.9s steps(1) infinite;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:hover,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:hover * {
+  color: var(--ff-gold) !important;
+}
+
+/* --------------------------------------------------- sidebar icon remaps */
+
+/* Gemini's sidebar icons are mat-icon font ligatures, so rows are keyed by
+   their link hrefs — the stable part of the markup. The stock glyph is
+   hidden (color, not display: the slot's size is load-bearing) and the item
+   sprite draws over it. */
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href="/app"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/search"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/images"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/videos"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/library"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href="library"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/gems"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebooks/create"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebook/"] mat-icon,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebooks/view"] mat-icon {
+  position: relative;
+  color: transparent !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href="/app"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/search"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/images"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/videos"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/library"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href="library"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/gems"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebooks/create"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebook/"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebooks/view"] mat-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* New chat — the palette coin, as on the other sites. Search — the sparkle
+   star. Images — the brush. Videos — the bolt. Library — the loot bag.
+   Gems — the crystal, naturally. Notebooks: create gets the artifact quill,
+   each notebook the tome, the index the travelling case. */
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href="/app"] mat-icon::after { background-image: var(--yume-nav-0); }
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/search"] mat-icon::after { background-image: var(--yume-shop-icon-star); }
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/images"] mat-icon::after { background-image: var(--yume-tray-0); }
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/videos"] mat-icon::after { background-image: var(--yume-shop-icon-bolt); }
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/library"] mat-icon::after,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href="library"] mat-icon::after { background-image: var(--yume-shop-icon-bag); }
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/gems"] mat-icon::after { background-image: var(--yume-ff-menu-crystal); }
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebooks/create"] mat-icon::after { background-image: var(--yume-nav-3); }
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebook/"] mat-icon::after { background-image: var(--yume-nav-2); }
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a[href^="/notebooks/view"] mat-icon::after { background-image: var(--yume-nav-5); }
+
+/* Recent chats (a[href^="/app/<id>"] — note the trailing path segment, which
+   "/app" itself lacks) read as the party's equipment: the same eight icons
+   claude's Recents cycle through. Their rows have no icon slot of their own,
+   so the sprite sits in the leading gutter the hover hand also uses — the
+   hand wins while hovered. */
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content .conversation-items-container,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content [class*="conversation"] {
+  overflow: visible;
+}
+
+/* Section labels (Notebooks / Recent) as small gold menu headers. */
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content h1,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content h2,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content h3,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content .title,
+html[data-cct-theme="final-fantasy-gemini"] side-navigation-content [class*="section-title"] {
+  font-family: var(--ff-pixel-ui) !important;
+  color: var(--ff-gold) !important;
+  letter-spacing: 0.04em;
+}
+
+/* The Chat/Spark segmented toggle at the top of the sidebar: a little
+   two-tab menu window. Active tab = .app-tab--active (no aria state). */
+html[data-cct-theme="final-fantasy-gemini"] mode-switcher-toggle .app-tabs {
+  background: rgba(7, 11, 42, 0.55) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 7px !important;
+  box-shadow: inset 0 0 0 1px rgba(3, 6, 22, 0.5);
+  padding: 3px !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] mode-switcher-toggle button.app-tab {
+  font-family: var(--ff-pixel-ui) !important;
+  color: #dbe4ff !important;
+  background: transparent !important;
+  border-radius: 4px !important;
+  border: 0 !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] mode-switcher-toggle button.app-tab:hover {
+  color: var(--ff-gold) !important;
+  background: rgba(255, 215, 94, 0.12) !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] mode-switcher-toggle button.app-tab.app-tab--active {
+  background: linear-gradient(180deg, #ffe58f 0%, #ffd75e 55%, #e2b83a 100%) !important;
+  color: #241c04 !important;
+  box-shadow: 0 1px 0 rgba(3, 6, 22, 0.6);
+}
+html[data-cct-theme="final-fantasy-gemini"] mode-switcher-toggle button.app-tab.app-tab--active * {
+  color: #241c04 !important;
+}
+
+/* The "Gemini" wordmark link above it keeps the pixel face. */
+html[data-cct-theme="final-fantasy-gemini"] side-nav-sparkle-button a,
+html[data-cct-theme="final-fantasy-gemini"] side-nav-sparkle-button .gemini-sidenav-text {
+  font-family: var(--ff-pixel-ui) !important;
+  color: #fff !important;
+}
+
+/* The profile / settings footer becomes its own little window, like the
+   other sites' footer rows. */
+html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer {
+  background: var(--ff-window) !important;
+  border: 2px solid var(--ff-frame) !important;
+  border-radius: 6px !important;
+  box-shadow: var(--ff-frame-shadow) !important;
+  margin: 4px 8px 8px !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer .mavatar-footer-row {
+  background: transparent !important;
+}
+
+/* ---------------------------------------------------------------- header */
+
+/* The top bar: wordmark + actions float on the sky; chips get glass. */
+html[data-cct-theme="final-fantasy-gemini"] top-bar-actions,
+html[data-cct-theme="final-fantasy-gemini"] .top-bar-actions {
+  background: transparent !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] top-bar-actions button,
+html[data-cct-theme="final-fantasy-gemini"] top-bar-actions gem-button {
+  font-family: var(--ff-pixel-ui) !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] top-bar-actions button:hover,
+html[data-cct-theme="final-fantasy-gemini"] top-bar-actions button:hover mat-icon {
+  color: var(--ff-gold) !important;
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+/* Filled/tonal Material buttons as the gold and blue menu buttons. */
+html[data-cct-theme="final-fantasy-gemini"] .mdc-button--unelevated,
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-unelevated-button,
+html[data-cct-theme="final-fantasy-gemini"] .mat-primary.mat-mdc-raised-button {
+  background: linear-gradient(180deg, #ffe58f 0%, #ffd75e 55%, #e2b83a 100%) !important;
+  color: #241c04 !important;
+  border: 2px solid #fff !important;
+  border-radius: 5px !important;
+  box-shadow: 0 2px 0 var(--ff-drop) !important;
+  font-family: var(--ff-pixel-ui) !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-outlined-button,
+html[data-cct-theme="final-fantasy-gemini"] .mdc-button--outlined {
+  background: linear-gradient(180deg, rgba(84, 114, 214, 0.55), rgba(18, 30, 92, 0.55)) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  border-radius: 5px !important;
+  box-shadow: 0 2px 0 var(--ff-drop) !important;
+  font-family: var(--ff-pixel-ui) !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .mdc-button--unelevated:hover,
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-unelevated-button:hover,
+html[data-cct-theme="final-fantasy-gemini"] .mat-mdc-outlined-button:hover {
+  filter: brightness(1.12);
+}
+
+/* Focus ring in gold, matching the other sites' controls. */
+html[data-cct-theme="final-fantasy-gemini"] button:focus-visible,
+html[data-cct-theme="final-fantasy-gemini"] a:focus-visible {
+  outline: 2px solid var(--ff-gold) !important;
+  outline-offset: 2px !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor:focus,
+html[data-cct-theme="final-fantasy-gemini"] rich-textarea .ql-editor:focus-visible {
+  outline: none !important;
+}
+
+/* Scrollbar as a menu slider: white rail, gold thumb. */
+html[data-cct-theme="final-fantasy-gemini"] ::-webkit-scrollbar { width: 9px; height: 9px; }
+html[data-cct-theme="final-fantasy-gemini"] ::-webkit-scrollbar-thumb {
+  background: var(--ff-gold) !important;
+  border-radius: 2px !important;
+  box-shadow: inset 0 0 0 1px rgba(3, 6, 22, 0.5);
+}
+html[data-cct-theme="final-fantasy-gemini"] ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ------------------------------------------- optional: colourful text */
+
+/* Gated on the per-theme toggle (popup ⚙ → data-yume-opt). Gold emphasis,
+   cyan italics, magenta headings, green inline code, gold list markers. */
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown strong,
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown b {
+  color: var(--ff-gold) !important;
+  text-shadow: 1px 1px 0 rgba(3, 6, 22, 0.8);
+}
+
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown em,
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown i {
+  color: var(--ff-crystal-cyan) !important;
+  font-style: italic !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown h1,
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown h2,
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown h3,
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown h4 {
+  color: #ff8ad8 !important;
+  text-shadow: 1px 1px 0 rgba(3, 6, 22, 0.85);
+}
+
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown code:not(pre code) {
+  color: #7ce8a4 !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown a {
+  color: #9db4ff !important;
+  text-decoration-color: rgba(157, 180, 255, 0.5) !important;
+}
+
+html[data-cct-theme="final-fantasy-gemini"][data-yume-opt~="rich-text"] .markdown li::marker {
+  color: var(--ff-gold) !important;
+}
+
+/* -------------------------------------------------------------- chocobo */
+
+@keyframes ff-choco-gait {
+  0%, 49.99% { background-position-x: 0%; }
+  50%, 100%  { background-position-x: 100%; }
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .yume-choco {
+  position: absolute;
+  width: calc(var(--yume-ff-choco-w) * 2px);
+  height: calc(var(--yume-ff-choco-h) * 2px);
+  background-image: var(--yume-ff-choco);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* Variant A — the parkour. Trajectory measured and driven by content.js via
+   WAAPI; these wrappers only set the stage. Box bird crosses at z 39, one
+   layer behind the party (40). */
+html[data-cct-theme="final-fantasy-gemini"] .yume-choco-a {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--yume-ff-choco-w) * 2px);
+  height: calc(var(--yume-ff-choco-h) * 2px);
+  z-index: 39;
+  pointer-events: none;
+  will-change: transform;
+  filter: drop-shadow(0 2px 0 rgba(3, 6, 22, 0.5));
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .yume-choco-a .yume-choco,
+html[data-cct-theme="final-fantasy-gemini"] .yume-choco-sky .yume-choco {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(-1);
+  animation: ff-choco-gait 0.22s steps(1) infinite;
+}
+
+/* Ground + leap segments: fixed on <body>, immune to ancestor clipping,
+   one notch under the starfields. */
+html[data-cct-theme="final-fantasy-gemini"] .yume-choco-sky {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: calc(var(--yume-ff-choco-w) * 2px);
+  height: calc(var(--yume-ff-choco-h) * 2px);
+  z-index: 2147483643;
+  pointer-events: none;
+  will-change: transform;
+  filter: drop-shadow(0 2px 0 rgba(3, 6, 22, 0.5));
+}
+
+/* Variants B/C — behind the composer's text, revealed edge-first. content.js
+   mounts the clip on the composer host; the pill's z-index:0 (granted above)
+   makes the z:-1 wrapper paint above the window fill, under the text. */
+html[data-cct-theme="final-fantasy-gemini"] .yume-choco-clip {
+  position: absolute;
+  top: 3px;
+  left: 8px;
+  right: 8px;
+  height: calc(var(--yume-ff-choco-h) * 2px);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes ff-choco-run-b {
+  from { transform: translateX(var(--choco-dist, 800px)); }
+  to   { transform: translateX(calc(var(--yume-ff-choco-w) * -2px)); }
+}
+@keyframes ff-choco-run-c {
+  from { transform: translateX(calc(var(--yume-ff-choco-w) * -2px)) scaleX(-1); }
+  to   { transform: translateX(var(--choco-dist, 800px)) scaleX(-1); }
+}
+
+html[data-cct-theme="final-fantasy-gemini"] .yume-choco-b {
+  animation:
+    ff-choco-gait 0.22s steps(1) infinite,
+    ff-choco-run-b var(--choco-dur, 4.2s) linear forwards;
+}
+html[data-cct-theme="final-fantasy-gemini"] .yume-choco-c {
+  animation:
+    ff-choco-gait 0.22s steps(1) infinite,
+    ff-choco-run-c var(--choco-dur, 4.2s) linear forwards;
+}
+
+/* --------------------------------------------------------------- motion */
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-cct-theme="final-fantasy-gemini"]::before,
+  html[data-cct-theme="final-fantasy-gemini"]::after,
+  html[data-cct-theme="final-fantasy-gemini"] body::before,
+  html[data-cct-theme="final-fantasy-gemini"] body::after,
+  html[data-cct-theme="final-fantasy-gemini"] fieldset.input-area-container,
+  html[data-cct-theme="final-fantasy-gemini"] input-container .input-area-container,
+  html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-latest][data-yume-reply] .response-container-content,
+  html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-reply] .response-container-content::before,
+  html[data-cct-theme="final-fantasy-gemini"] .yume-party-member,
+  html[data-cct-theme="final-fantasy-gemini"] .yume-shooting-star,
+  html[data-cct-theme="final-fantasy-gemini"] model-response[data-yume-working] .response-container::after,
+  html[data-cct-theme="final-fantasy-gemini"] side-navigation-content a:not([href^="http"]):hover::before {
+    animation: none !important;
+  }
+  html[data-cct-theme="final-fantasy-gemini"] .yume-choco,
+  html[data-cct-theme="final-fantasy-gemini"] .yume-choco-clip,
+  html[data-cct-theme="final-fantasy-gemini"] .yume-choco-sky {
+    display: none;
+  }
+}
