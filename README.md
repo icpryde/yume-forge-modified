@@ -17,7 +17,10 @@ A fork of [Yume Themes for Claude](https://chromewebstore.google.com/detail/ipfk
 - **Import / export / share** — every theme card has a **⤓** button that
   saves a self-contained file and copies a share code. Import a file, a
   pasted code, or a zip of either.
-- The original's 24 Claude themes, untouched — 27 bundled themes in all.
+- The original's 24 Claude themes, untouched. They're written against
+  claude.ai's own markup, so they stay on the Claude tab — the OpenAI and
+  Gemini tabs each hold that site's Final Fantasy card alone. 27 bundled
+  themes in all.
 
 ## Install (Chrome)
 
@@ -74,11 +77,15 @@ writes the shareable `dist/<id>.yume.json` + `.yume.txt` exports (those three
 are the ones worth packaging; `--all` does every bundled theme).
 `node tools/check.mjs` runs the suites (engine, content-script smoke drives for
 all three sites, glyph states, packaged-theme round-trips, popup, zip) — the
-popup and zip suites skip until `dist/` and `release/yume-forge-modified.zip`
-exist. `node tools/package.mjs --out ./release` builds the shareable zip.
+popup and zip suites skip until `dist/final-fantasy.yume.json` and
+`release/yume-forge-modified.zip` exist; check.mjs prints the exact command that
+makes them. `node tools/package.mjs --out ./release` builds the shareable zip.
 `tools/mock.html` and `tools/gemini-mock.html` render the theme against stand-in
-Claude and Gemini markup for visual iteration offline. The theme studio
-(chrome://extensions → Details → Extension options) edits and creates themes.
+Claude and Gemini markup for visual iteration offline (there is no ChatGPT mock —
+its fixture lives inside `tools/smoke.mjs`). The theme studio
+(chrome://extensions → Details → Extension options) edits and creates themes; it
+has no site picker, so a theme you create there is a Claude one (imported and
+duplicated themes keep the site they came with).
 The asset generators and their sources are documented in `tools/` — the
 generated `sprites/*.css` files each name the tool that wrote them.
 

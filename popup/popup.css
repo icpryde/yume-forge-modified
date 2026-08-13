@@ -47,8 +47,9 @@ h1 {
   white-space: nowrap;
 }
 
-/* Claude / OpenAI switch — a segmented control above the category chips.
-   Each side keeps its own selected theme; this only changes what's listed. */
+/* Claude / OpenAI / Gemini switch — a segmented control above the category
+   chips. Each site keeps its own selected theme; this only changes what's
+   listed. */
 .sites {
   display: flex;
   gap: 4px;

@@ -309,11 +309,11 @@ $("btn-rederive").addEventListener("click", () => {
 $("btn-random").addEventListener("click", surprise);
 
 el.live.addEventListener("change", () => {
-  if (el.live.checked) { pushPreview(); status("Previewing on any open claude.ai tab."); }
+  if (el.live.checked) { pushPreview(); status("Previewing on any open claude.ai, chatgpt.com or gemini.google.com tab."); }
   else { clearPreview(); status("Live preview off."); }
 });
 
-// Never strand claude.ai showing an unsaved preview.
+// Never strand a themed tab showing an unsaved preview.
 window.addEventListener("beforeunload", clearPreview);
 
 /* ------------------------------------------------------------------ import */

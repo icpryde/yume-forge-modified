@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.10 — 2026-08-12
+
+Docs and copy caught up with three-site support.
+
+- README: says plainly that the 24 original themes are Claude-only (they're
+  written against claude.ai's markup), so the OpenAI and Gemini tabs holding
+  one card each reads as intended rather than broken. The developer notes now
+  name the real test gates and mocks.
+- The theme studio's live-preview toggle said "Live on claude.ai"; the preview
+  has always reached every themed tab, so it now says so — and the token hint
+  no longer credits the ramp to Claude alone.
+- fonts/OFL.txt carries a Silkscreen copyright notice alongside Press Start
+  2P's; we ship both fonts, so both notices travel with them.
+
 ## 1.3.9 — 2026-08-11
 
 - Send-slot forensics on the live page (button subtree + five ancestors,
