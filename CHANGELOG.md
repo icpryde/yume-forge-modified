@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.3.11 — 2026-08-14
+
+The collapsed sidebar, and pictures for the front door.
+
+- Collapsing the sidebar swaps in a separate icon-only pinned list and
+  leaves the expanded lists invisible but still occupying layout — the
+  section windows were framing phantoms and clipping 32px icons inside
+  24px wrappers. Under `bard-sidenav.collapsed` the boxes now stand down
+  entirely (icons stand alone, as stock does), the hover hand stays home,
+  the footer window slims to rail width, and the collapsed-only
+  Chat/Spark toggle wears the halo sprite.
+- New `tools/gpt-mock.html` — the ChatGPT offline harness that never
+  existed; all three mocks now feed the README's new screenshot table
+  (sample data only, nobody's real chats).
+
 ## 1.3.10 — 2026-08-12
 
 Docs and copy caught up with three-site support.

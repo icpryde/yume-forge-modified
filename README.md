@@ -3,6 +3,13 @@
 Themes for **claude.ai**, **chatgpt.com** and **gemini.google.com**, in one
 Chrome extension.
 
+| claude.ai | chatgpt.com | gemini.google.com |
+| :---: | :---: | :---: |
+| ![Final Fantasy on Claude](docs/screenshots/claude.png) | ![Final Fantasy on ChatGPT](docs/screenshots/chatgpt.png) | ![Final Fantasy on Gemini](docs/screenshots/gemini.png) |
+
+<sub>The 💎 Final Fantasy theme on all three sites — rendered from the offline
+harnesses in `tools/`, so the pictures carry sample data, not anyone's chats.</sub>
+
 A fork of [Yume Themes for Claude](https://chromewebstore.google.com/detail/ipfkpkhddkhndibomlaklpfaikjfdlgb)
 (by Mohamed El-Harras) with:
 
@@ -80,9 +87,10 @@ all three sites, glyph states, packaged-theme round-trips, popup, zip) — the
 popup and zip suites skip until `dist/final-fantasy.yume.json` and
 `release/yume-forge-modified.zip` exist; check.mjs prints the exact command that
 makes them. `node tools/package.mjs --out ./release` builds the shareable zip.
-`tools/mock.html` and `tools/gemini-mock.html` render the theme against stand-in
-Claude and Gemini markup for visual iteration offline (there is no ChatGPT mock —
-its fixture lives inside `tools/smoke.mjs`). The theme studio
+`tools/mock.html`, `tools/gpt-mock.html` and `tools/gemini-mock.html` render the
+theme against stand-in markup for each site for visual iteration offline (the
+README screenshots come from these; the headless smoke fixtures live inside
+`tools/smoke.mjs`). The theme studio
 (chrome://extensions → Details → Extension options) edits and creates themes; it
 has no site picker, so a theme you create there is a Claude one (imported and
 duplicated themes keep the site they came with).

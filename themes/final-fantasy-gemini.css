@@ -1259,6 +1259,55 @@ html[data-cct-theme="final-fantasy-gemini"] sidenav-mavatar-footer span:not(mat-
   font-family: var(--ff-pixel-ui) !important;
 }
 
+/* ------------------------------------------------- collapsed rail (52px) */
+
+/* Collapsing the sidebar (bard-sidenav gains .collapsed) swaps the layout
+   out from under the boxes: a separate icon-only list
+   (.top-action-list-pinned) un-hides, the expanded lists go
+   visibility:hidden but KEEP their layout slot, and every anchor (32px)
+   overflows its 24px wrapper. Boxes drawn there frame nothing and clip
+   everything — so in the rail they stand down entirely and the icons stand
+   alone, like the stock rail does. */
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav.collapsed.collapsed side-navigation-content div.top-action-list mat-nav-list,
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav.collapsed.collapsed side-navigation-content mat-nav-list.top-action-list-scrollable,
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav.collapsed.collapsed side-navigation-content expandable-section {
+  background: transparent !important;
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* No room for the hover hand in a 52px rail; row highlights carry hover. */
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav.collapsed side-navigation-content a::before {
+  content: none !important;
+}
+
+/* The collapsed-only Chat/Spark toggle (stock glyph: toggle_off) wears the
+   halo — the one ring-shaped sprite in the set, and unused on this site. */
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav.collapsed .collapsed-button-wrapper mat-icon {
+  position: relative;
+  color: transparent !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav.collapsed .collapsed-button-wrapper mat-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 20px;
+  height: 20px;
+  background: var(--yume-shop-icon-halo) center / contain no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* The footer window slims to rail width; its row stacks and centres. */
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav.collapsed sidenav-mavatar-footer {
+  margin: 4px 2px 6px !important;
+}
+html[data-cct-theme="final-fantasy-gemini"] bard-sidenav.collapsed sidenav-mavatar-footer .mavatar-footer-row {
+  justify-content: center;
+}
+
 /* Section labels (Notebooks / Recent) as small gold menu headers. */
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content h1,
 html[data-cct-theme="final-fantasy-gemini"] side-navigation-content h2,

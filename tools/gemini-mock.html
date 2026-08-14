@@ -67,6 +67,19 @@
 
   /* sidebar rows */
   mat-nav-list, expandable-section, infinite-scroller { display: block; }
+  mat-nav-list.top-action-list-pinned { display: none; }
+  /* stand-in for the site's own collapsed-rail layout */
+  bard-sidenav.collapsed { width: 52px; }
+  bard-sidenav.collapsed .gemini-sidenav-text,
+  bard-sidenav.collapsed mode-switcher-toggle,
+  bard-sidenav.collapsed .mavatar-name,
+  bard-sidenav.collapsed gem-nav-list-item a > span { display: none; }
+  bard-sidenav.collapsed mat-nav-list.top-action-list-pinned { display: block; }
+  bard-sidenav.collapsed mat-nav-list.top-action-list-scrollable,
+  bard-sidenav.collapsed expandable-section { visibility: hidden; opacity: 0; width: 24px; overflow: hidden; }
+  bard-sidenav.collapsed gem-nav-list-item a { width: 32px; padding: 8px 6px; justify-content: center; }
+  .collapsed-button-wrapper { padding: 4px 8px; }
+  .collapsed-button-wrapper button { background: none; border: 0; color: inherit; width: 32px; height: 32px; }
   .expandable-section-header { background: none; border: 0; color: #9a9b9c; font-size: 12px; padding: 12px 12px 6px; display: block; }
   gem-nav-list-item a gem-icon-button { margin-left: auto; }
   gem-nav-list-item a gem-icon-button button { position: relative; background: none; border: 0; color: inherit; width: 24px; height: 24px; border-radius: 9999px; }
@@ -173,7 +186,16 @@
       <button class="app-tab">Spark</button>
     </div></mode-switcher-toggle>
     <div class="overflow-container has-mode-switcher-toggle">
-      <div class="top-action-list"><mat-nav-list class="gds-sidenav-list">
+      <div class="top-action-list">
+      <!-- collapsed-only icon list; the site un-hides this (and hides the
+           scrollable one) when the sidebar collapses -->
+      <mat-nav-list class="gds-sidenav-list top-action-list-pinned">
+        <gem-nav-list-item><a class="gem-nav-list-item" href="/images"><mat-icon class="lumi-symbols">image</mat-icon></a></gem-nav-list-item>
+        <gem-nav-list-item><a class="gem-nav-list-item" href="/videos"><mat-icon class="lumi-symbols">movie</mat-icon></a></gem-nav-list-item>
+        <gem-nav-list-item><a class="gem-nav-list-item" href="library"><mat-icon class="lumi-symbols">book</mat-icon></a></gem-nav-list-item>
+        <gem-nav-list-item><a class="gem-nav-list-item" href="/gems/view"><mat-icon class="lumi-symbols">diamond</mat-icon></a></gem-nav-list-item>
+      </mat-nav-list>
+      <mat-nav-list class="gds-sidenav-list">
         <gem-nav-list-item><a class="gem-nav-list-item" href="/app"><mat-icon class="lumi-symbols">edit_square</mat-icon><span>New chat</span></a></gem-nav-list-item>
         <gem-nav-list-item><a class="gem-nav-list-item" href="/search"><mat-icon class="lumi-symbols">search</mat-icon><span>Search chats</span></a></gem-nav-list-item>
       </mat-nav-list></div>
@@ -308,6 +330,15 @@
   }
   if (state === "menu") {
     document.getElementById("overlay").hidden = false;
+  }
+  if (state === "collapsed") {
+    // Mirror the live transition: bard-sidenav gains .collapsed, the pinned
+    // icon list un-hides, and the collapsed-only Spark toggle mounts.
+    document.querySelector("bard-sidenav").classList.add("collapsed");
+    const wrap = document.createElement("div");
+    wrap.className = "collapsed-button-wrapper";
+    wrap.innerHTML = '<gem-icon-button class="gem-button gem-button-size-small"><button aria-label="Switch to Spark (⇧⌘S)"><mat-icon class="lumi-symbols" fonticon="toggle_off">toggle_off</mat-icon></button></gem-icon-button>';
+    document.querySelector(".sparkle-row").after(wrap);
   }
   if (state === "busy") {
     // Mid-run shape per the live probe: actions row not mounted yet, stop

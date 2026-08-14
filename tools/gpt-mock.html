@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<!--
+  Yume Forge — offline theme harness for the CHATGPT port.
+
+  Mirrors the parts of chatgpt.com's DOM that the theme actually hooks: the
+  #stage-slideover-sidebar with its __menu-item rows and section boxes, a
+  user/assistant turn pair (bubble + .markdown, stamped by content.js), and
+  the unified-composer form with its [data-composer-surface]. Element names
+  and testids match the live build the theme was written against (2026-08-01);
+  the smoke fixture in tools/smoke.mjs exercises the same shapes headlessly.
+
+  Open it directly, or screenshot it:
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
+      --screenshot=/tmp/gpt-mock.png --window-size=1440,900 tools/gpt-mock.html
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Yume Forge — chatgpt theme harness</title>
+
+<link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="stylesheet" href="../sprites/party.css">
+<link rel="stylesheet" href="../sprites/party-strips.css">
+<link rel="stylesheet" href="../sprites/chocobo.css">
+<link rel="stylesheet" href="../sprites/crystal.css">
+<link rel="stylesheet" href="../sprites/menu-crystal.css">
+<link rel="stylesheet" href="../sprites/cursor.css">
+<link rel="stylesheet" href="../sprites/moogle.css">
+<link rel="stylesheet" href="../sprites/items.css">
+<link rel="stylesheet" href="../sprites/nav-icons.css">
+<link rel="stylesheet" href="../sprites/shop-icons.css">
+<link rel="stylesheet" href="../sprites/silhouette.css">
+<link rel="stylesheet" href="../sprites/ambience.css">
+<link rel="stylesheet" href="../themes/final-fantasy-gpt.css">
+
+<style>
+  /* --- a minimal stand-in for ChatGPT's own base layer ------------------- */
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    background: #212121; color: #ececec;
+    height: 100vh; overflow: hidden; display: flex;
+  }
+  #stage-slideover-sidebar { width: 260px; flex: none; background: #171717; padding: 8px; display: flex; flex-direction: column; }
+  #stage-slideover-sidebar nav { display: block; }
+  .__menu-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; color: inherit; text-decoration: none; font-size: 13.5px; position: relative; }
+  .__menu-item:hover { background: #212121; }
+  .__menu-item .icon { width: 20px; height: 20px; flex: none; display: inline-block; }
+  .__menu-item .icon svg { width: 20px; height: 20px; fill: currentColor; }
+  h2.__section { font-size: 12px; color: #8e8e8e; padding: 14px 10px 6px; font-weight: 500; }
+  [data-testid="accounts-profile-button"] { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+  [data-testid="accounts-profile-button"] .avatar { width: 28px; height: 28px; border-radius: 50%; background: #7a5563; flex: none; }
+  [data-testid="accounts-profile-button"] .trailing { margin-left: auto; position: relative; width: 24px; height: 24px; }
+
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #page-header { display: flex; padding: 10px 16px; }
+  #page-header .translucent-surface { padding: 5px 12px; border-radius: 8px; background: #2f2f2f; font-size: 13px; }
+  #thread { flex: 1; overflow-y: auto; }
+  .thread-col { max-width: 760px; margin: 0 auto; padding: 24px 16px; display: flex; flex-direction: column; gap: 20px; }
+  section[data-turn="user"] { display: flex; justify-content: flex-end; }
+  .user-message-bubble-color { background: #2f2f2f; border-radius: 22px; padding: 10px 16px; max-width: 80%; }
+  .markdown { font-size: 15px; line-height: 1.7; }
+  .markdown p { margin: 0 0 12px; }
+  .markdown h3 { margin: 12px 0 8px; }
+  .markdown pre { background: #171717; border-radius: 8px; padding: 12px; margin: 0 0 12px; overflow: auto; }
+  section[data-turn="assistant"] > div:first-of-type > div:first-child { position: relative; }
+
+  #footer { padding: 8px 16px 6px; }
+  form[data-type="unified-composer"] { max-width: 760px; margin: 0 auto; position: relative; }
+  [data-composer-surface] { background: #2f2f2f; border-radius: 28px; padding: 12px 14px; display: flex; align-items: center; gap: 8px; }
+  #prompt-textarea { flex: 1; outline: none; font-size: 15px; min-height: 24px; }
+  .composer-btn { background: none; border: 0; color: inherit; width: 32px; height: 32px; border-radius: 50%; flex: none; }
+  button[aria-label="Send prompt"] { background: #fff; color: #000; border: 0; width: 36px; height: 36px; border-radius: 50%; flex: none; position: relative; }
+  [data-testid="thread-disclaimer"] { text-align: center; font-size: 11.5px; color: #8e8e8e; padding: 8px 0 4px; }
+</style>
+</head>
+<body>
+<script>
+  localStorage.clear();
+  localStorage.setItem("sync:cctThemeGpt", JSON.stringify("final-fantasy-gpt"));
+  window.__YUME_TEST_SITE = "chatgpt";
+</script>
+
+<div id="stage-slideover-sidebar"><nav class="group/scrollport" aria-label="Chat history">
+  <div class="section-first-margin-top"><a class="__menu-item" data-testid="create-new-chat-button" href="#"><div class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 10h12M10 4v12" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>New chat</a></div>
+  <a class="__menu-item" href="/library"><div class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="4" y="3" width="12" height="14" rx="1" fill="currentColor"/></svg></div>Library</a>
+  <a class="__menu-item" href="/scheduled"><div class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="currentColor"/></svg></div>Scheduled</a>
+  <a class="__menu-item" data-testid="plugins-button" href="/plugins"><div class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M10 2l3 6h-6z" fill="currentColor"/></svg></div>Plugins</a>
+  <div><div class="__menu-item" aria-haspopup="menu"><div class="icon" aria-hidden="true"><svg viewBox="0 0 20 20"><circle cx="5" cy="10" r="1.6" fill="currentColor"/><circle cx="10" cy="10" r="1.6" fill="currentColor"/><circle cx="15" cy="10" r="1.6" fill="currentColor"/></svg></div>More</div></div>
+
+  <h2 class="__section">Chats</h2>
+  <a class="__menu-item" href="/c/aaa">Airship maintenance schedule</a>
+  <a class="__menu-item" href="/c/bbb">Best gil farming routes</a>
+  <a class="__menu-item" href="/c/ccc">Chocobo breeding guide</a>
+  <a class="__menu-item" href="/c/ddd">Crystal lore deep dive</a>
+</nav>
+<div data-testid="accounts-profile-button"><div class="avatar"></div><span>Cid Highwind</span><div class="trailing"><svg viewBox="0 0 24 24" width="24" height="24"><rect x="4" y="4" width="6" height="6" fill="currentColor"/><rect x="14" y="4" width="6" height="6" fill="currentColor"/><rect x="4" y="14" width="6" height="6" fill="currentColor"/><rect x="14" y="14" width="6" height="6" fill="currentColor"/></svg></div></div>
+</div>
+
+<main>
+  <div id="page-header"><div class="translucent-surface"><span class="header-wordmark">ChatGPT 5.2</span></div></div>
+  <div id="thread"><div class="thread-col">
+    <section data-testid="conversation-turn-1" data-turn="user">
+      <div data-message-author-role="user"><div class="user-message-bubble-color">How do I raise a gold chocobo?</div></div>
+    </section>
+    <section data-testid="conversation-turn-2" data-turn="assistant">
+      <div><div data-message-author-role="assistant"><div class="markdown prose">
+        <p>Raising a <strong>gold chocobo</strong> takes patience, greens, and a little racing glory. The classic route runs through careful breeding.</p>
+        <h3>The short version</h3>
+        <p>Catch <em>great</em> and <em>good</em> chocobos, race them to Class A, then breed with a Carob Nut. Repeat with the blue and green offspring for a black bird, and finish with a Zeio Nut.</p>
+        <pre><code>wonderful + black + Zeio Nut = gold</code></pre>
+      </div></div></div>
+      <button data-testid="copy-turn-action-button" style="background:none;border:0;color:#8e8e8e">⧉</button>
+    </section>
+  </div></div>
+
+  <div id="footer">
+    <form data-type="unified-composer">
+      <div class="relative"><div data-composer-surface="true">
+        <button class="composer-btn" data-testid="composer-plus-btn">+</button>
+        <div id="prompt-textarea" contenteditable="true" role="textbox"><p data-placeholder="Ask anything" class="placeholder">Ask anything</p></div>
+        <button class="composer-btn" data-testid="composer-speech-button">🎤</button>
+        <button aria-label="Send prompt"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 4l6 8h-4v8h-4v-8H6z" fill="currentColor"/></svg></button>
+      </div></div>
+    </form>
+    <div data-testid="thread-disclaimer">ChatGPT can make mistakes. Check important info.</div>
+  </div>
+</main>
+
+<script src="../lib/theme-engine.js"></script>
+<script src="../content.js"></script>
+</body>
+</html>
