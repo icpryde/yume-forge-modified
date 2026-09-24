@@ -83,7 +83,8 @@ simply ignore the field.
 writes the shareable `dist/<id>.yume.json` + `.yume.txt` exports (those three
 are the ones worth packaging; `--all` does every bundled theme).
 `node tools/check.mjs` runs the suites (engine, content-script smoke drives for
-all three sites, glyph states, packaged-theme round-trips, popup, zip) — the
+all three sites, glyph states, wide-table layout, packaged-theme round-trips,
+popup, zip) — the
 popup and zip suites skip until `dist/final-fantasy.yume.json` and
 `release/yume-forge-modified.zip` exist; check.mjs prints the exact command that
 makes them. `node tools/package.mjs --out ./release` builds the shareable zip.

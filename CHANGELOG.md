@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.3.12 — 2026-09-24
+
+Wide tables get a window that fits them.
+
+- ChatGPT lets tables leave the text column on purpose: a 100cqw container
+  on negative gutters, and a table at least the whole column wide. The
+  reply window's padding made the text narrower than that column, so every
+  table ran ~42px past the frame's right edge, and a wide one much further.
+  Inside a framed reply the breakout now folds back in and the window grows
+  to fit the table instead: evenly both ways, centred on the column, as
+  wide as the table asks, capped by the room the thread has and by 72rem.
+  A table that already fits keeps the window at the column (and fills it,
+  as the stock table fills the column); one past the cap scrolls inside the
+  frame. Long code lines and no-wrap text beside a table can't balloon it.
+- claude.ai never spilled (it scrolls a too-wide table sideways inside the
+  column), but under the theme that was a scrollbar in a window that could
+  simply be wider. A reply whose table can't fit now widens by what the
+  table needs, the same way. content.js measures it, since claude.ai offers
+  CSS no container to measure the room against; tables that fit are left
+  exactly as claude.ai lays them out.
+- Gemini needed nothing: its reply window already spans the chat area and a
+  wide table scrolls inside it (checked live).
+- New `tools/wide-test.mjs`, run by check.mjs: wide tables laid out on markup
+  and site CSS transcribed from both live pages, asserted on real geometry.
+  It fails eleven ways against 1.3.11.
+
 ## 1.3.11 — 2026-08-14
 
 The collapsed sidebar, and pictures for the front door.

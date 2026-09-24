@@ -269,6 +269,19 @@ html[data-cct-theme="final-fantasy"] div[data-is-streaming][data-yume-reply] pre
   border-radius: 5px !important;
 }
 
+/* Wide replies. claude.ai keeps a table inside the column and scrolls it
+   sideways when it can't fit, so nothing spills, but under the theme that
+   is a scrollbar inside a window that could simply be wider. content.js
+   measures how far the widest table's minimum width runs past the column
+   and writes that (plus a little breathing room) to --yume-grow on the
+   reply; the window widens by that much, evenly both ways so its centre
+   stays on the column, capped by the room around the column. A table that
+   fits is left exactly as claude.ai lays it out. */
+html[data-cct-theme="final-fantasy"] div[data-is-streaming][data-yume-reply][style*="--yume-grow"] {
+  margin-inline: calc(var(--yume-grow) / -2) !important;
+  max-width: none !important;
+}
+
 /* The newest reply breathes, the same way the composer does — content.js
    stamps data-yume-latest, since "the last one" is not something CSS can
    express reliably across this message tree. */

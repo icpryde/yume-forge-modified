@@ -428,6 +428,52 @@ html[data-cct-theme="final-fantasy-gpt"] .markdown th {
   background: rgba(47, 71, 168, 0.45) !important;
 }
 
+/* ---------------------------------------------------------- wide replies */
+
+/* ChatGPT lets tables leave the text column on purpose: the table container
+   is 100cqw wide on negative gutters, its wrapper indents back to the text's
+   left edge, and the table is at least --thread-content-width, which is the
+   WHOLE column. Measured live (2026-09-24): the window's own padding leaves
+   the text ~60px narrower than that column, so every table ran ~42px past
+   the frame's right edge, and a wide one much further.
+
+   Inside a framed reply the breakout folds back in, and the WINDOW grows to
+   fit the table instead: never narrower than the column, as wide as the
+   widest table asks, capped by the room the thread has (its 4rem margins
+   stay clear, which is also what the table-of-contents rail needs) and by
+   72rem, about where ChatGPT's own tables stop on a 1080p screen. It grows
+   evenly both ways, centred on the column like the composer under it. A
+   table wider than the cap scrolls inside the frame. */
+html[data-cct-theme="final-fantasy-gpt"] section[data-yume-reply] div[data-message-author-role="assistant"]:has(table) {
+  width: max-content !important;
+  min-width: 100% !important;
+  max-width: min(72rem, calc(100cqw - 8rem)) !important;
+  align-self: center !important;
+}
+
+/* Only a table may size that window. Everything off the path down to a table
+   stops reporting a width of its own (inline-size containment: a long
+   paragraph or code line no longer asks to sit on one row), and still fills
+   whatever width the window settles on. The table's own wrappers are left
+   alone: the hover toolbar inside is a shrink-to-fit flex item and would
+   collapse. */
+html[data-cct-theme="final-fantasy-gpt"] section[data-yume-reply] div[data-message-author-role="assistant"]:has(table) :has(table):not([class*="_table"]) > :not(:has(table), table) {
+  contain: inline-size;
+}
+
+html[data-cct-theme="final-fantasy-gpt"] section[data-yume-reply] [class*="_tableContainer"] {
+  width: auto !important;
+  margin-inline: 0 !important;
+}
+html[data-cct-theme="final-fantasy-gpt"] section[data-yume-reply] [class*="_tableWrapper"] {
+  margin-inline: 0 !important;
+  min-width: 100%;
+}
+/* At least as wide as the window's text, as the stock table is the column. */
+html[data-cct-theme="final-fantasy-gpt"] section[data-yume-reply] .markdown table {
+  min-width: 100% !important;
+}
+
 /* ------------------------------------------------------ composer + glow */
 
 @keyframes ff-breathe {

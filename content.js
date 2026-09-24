@@ -1207,6 +1207,121 @@
   }
 
   /**
+   * claude only: widen a framed reply whose table can't fit the column.
+   *
+   * claude.ai scrolls such a table sideways inside the column, which under
+   * the theme is a scrollbar in a window that could simply be wider. The
+   * reply grows by however far the widest table's minimum width runs past
+   * the column, plus a little breathing room, written to --yume-grow for
+   * themes/final-fantasy.css to spend as negative inline margins, so the
+   * window widens evenly and its centre stays on the column. Capped by the
+   * room around the column (less a margin each side) and 72rem overall. On chatgpt the same job is pure CSS, sized off the container
+   * query the thread already declares; claude.ai offers CSS no container to
+   * measure that room with, hence the measuring here.
+   *
+   * A table that fits the column is never touched or measured. The growth is
+   * worked out afresh on every pass from the table's minimum width against
+   * the ungrown column, so it shrinks as readily as it grows (a regenerated
+   * reply whose new table fits goes back to the column).
+   */
+  const GROW_PROP = "--yume-grow";
+  const GROW_EASE = 64;     // past the table's bare minimum width
+  const GROW_MARGIN = 64;   // kept clear of the scroller's edge, each side
+  const GROW_MAX = 1152;    // 72rem, the widest a window gets (as on chatgpt)
+
+  // A table's min-content width, measured by laying it out at min-content
+  // for one synchronous read (no frame paints in between). Memoised per
+  // table until its rows, text or the loaded fonts change: the pass reruns
+  // on every scroll tick.
+  const tableMins = new WeakMap();
+  let fontEpoch = 0;
+  if (SITE === "claude" && document.fonts) {
+    document.fonts.addEventListener("loadingdone", () => { fontEpoch++; });
+  }
+
+  function tableMinWidth(table) {
+    const sig = table.rows.length + ":" + table.textContent.length + ":" + fontEpoch;
+    const hit = tableMins.get(table);
+    if (hit && hit.sig === sig) return hit.width;
+    const saved = table.getAttribute("style");
+    table.style.setProperty("width", "min-content", "important");
+    table.style.setProperty("min-width", "0", "important");
+    table.style.setProperty("max-width", "none", "important");
+    const width = table.getBoundingClientRect().width;
+    if (saved === null) table.removeAttribute("style");
+    else table.setAttribute("style", saved);
+    tableMins.set(table, { sig, width });
+    return width;
+  }
+
+  // How far a table's minimum width runs past the room the UNGROWN window
+  // would give it. The room is its scroller's (claude wraps tables in an
+  // overflow-x:auto div) or, for a bare table, the window's content box.
+  // A table showing no overflow in an ungrown window needs nothing and is
+  // not measured at all.
+  function tableNeed(table, win, cur) {
+    let box = null;
+    for (let n = table; n && n !== win; n = n.parentElement) {
+      const ox = getComputedStyle(n).overflowX;
+      if (ox === "auto" || ox === "scroll") { box = n; break; }
+      if (ox !== "visible") break;
+    }
+    let room, over;
+    if (box) {
+      room = box.clientWidth;
+      over = box.scrollWidth - room;
+    } else {
+      const cs = getComputedStyle(win);
+      const r = win.getBoundingClientRect();
+      const right = r.right - parseFloat(cs.paddingRight) - parseFloat(cs.borderRightWidth);
+      room = right - (r.left + parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth));
+      over = table.getBoundingClientRect().right - right;
+    }
+    if (cur <= 0 && over <= 1) return 0;
+    return tableMinWidth(table) - (room - cur);
+  }
+
+  // The widest the window may be: twice the distance from its centre to the
+  // nearer inner edge of the first ancestor that would clip it, less the
+  // margin. Even growth never moves the centre, so a grown window measures
+  // exactly like a fresh one.
+  function roomAround(win) {
+    let clip = win.parentElement;
+    while (clip && clip !== document.documentElement &&
+           getComputedStyle(clip).overflowX === "visible") clip = clip.parentElement;
+    const box = clip || document.documentElement;
+    const left = box.getBoundingClientRect().left + box.clientLeft;
+    const right = left + box.clientWidth;
+    const r = win.getBoundingClientRect();
+    const mid = r.left + r.width / 2;
+    return 2 * (Math.min(mid - left, right - mid) - GROW_MARGIN);
+  }
+
+  function syncWideReplies() {
+    if (SITE !== "claude") return;
+    for (const win of document.querySelectorAll("div[data-is-streaming][data-yume-reply]")) {
+      const cur = parseFloat(win.style.getPropertyValue(GROW_PROP)) || 0;
+      let need = 0;
+      for (const t of win.querySelectorAll("table")) need = Math.max(need, tableNeed(t, win, cur));
+      let grow = 0;
+      if (need > 1) {
+        const base = win.getBoundingClientRect().width - cur;
+        const most = Math.min(roomAround(win), GROW_MAX) - base;
+        grow = Math.round(Math.max(0, Math.min(need + GROW_EASE, most)));
+      }
+      if (grow === Math.round(cur)) continue;
+      if (grow > 0) win.style.setProperty(GROW_PROP, grow + "px");
+      else win.style.removeProperty(GROW_PROP);
+    }
+  }
+
+  function clearWideReplies() {
+    for (const el of document.querySelectorAll('[style*="' + GROW_PROP + '"]')) {
+      el.style.removeProperty(GROW_PROP);
+    }
+  }
+
+  /**
    * gemini only: input-container ships an opaque #0f0f0f of its own that
    * reads as a black band across the viewport bottom. Its utility classes
    * shift between builds (input-gradient / ui-improvements-phase-1 / …), and
@@ -1344,7 +1459,7 @@
       // Orphaned — tear our own additions out rather than leaving them stranded.
       document.querySelectorAll("." + PARTY_CLASS).forEach((n) => n.remove());
       document.querySelectorAll("." + STAR_CLASS).forEach((n) => n.remove());
-      clearBannerPadding(); clearReplyWindows(); clearLatestReply();
+      clearBannerPadding(); clearReplyWindows(); clearLatestReply(); clearWideReplies();
       if (chocoAbort) chocoAbort();
       clearTimeout(chocoTimer);
       clearTimeout(starTimer); starTimer = null;
@@ -1363,6 +1478,7 @@
       clearBannerPadding();
       clearLatestReply();
       clearReplyWindows();
+      clearWideReplies();
       // A chocobo mid-run belongs to this theme too; don't leave it sprinting
       // over dracula. The schedule timer stays — it re-checks the theme when
       // it fires, so switching back needs no replumbing.
@@ -1373,6 +1489,7 @@
     document.documentElement.setAttribute(PARTY_ATTR, "dom");
     markReplyWindows();
     markLatestReply();
+    syncWideReplies();
     if (!host) return;
     // Re-parent rather than rebuild when the composer is replaced on navigation,
     // so a click mid-animation isn't lost.

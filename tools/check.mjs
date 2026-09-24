@@ -10,6 +10,8 @@
 //                   cannot see a function deleted out from under its callers)
 //   glyph-test.mjs  asserts the working-glyph rules PARSED, since an invalid
 //                   selector is dropped silently and looks exactly like a bug
+//   wide-test.mjs   lays out wide tables on chatgpt- and claude-shaped pages
+//                   and asserts the reply window grows to fit, never spills
 //   pack-test.mjs   renders bundled vs exported-and-reimported and diffs the
 //                   computed styles
 //   popup-test.mjs  drives the real popup through import -> export
@@ -30,6 +32,7 @@ const SUITES = [
   ["engine", "tools/test.mjs"],
   ["smoke", "tools/smoke.mjs"],
   ["glyph", "tools/glyph-test.mjs"],
+  ["wide", "tools/wide-test.mjs"],
   ["package", "tools/pack-test.mjs"],
   // Drives the real popup: import a packaged theme, export it again, check
   // what would have been downloaded. Needs a packed theme to feed it.
